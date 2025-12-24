@@ -26,6 +26,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
+  if(loading) return;
   try {
     setLoading(true);
     await registerUser(formData);
@@ -76,6 +77,7 @@ const Register = () => {
             name="password"
             placeholder="Password (min 6 chars)"
             className="input"
+            autoComplete="new-password"
             onChange={handleChange}
             required
           />
