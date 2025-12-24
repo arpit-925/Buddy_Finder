@@ -12,6 +12,7 @@ import tripRoutes from "./routes/tripRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import socketHandler from "./socket/socket.js";
 import userRoutes from "./routes/userRoutes.js";
+import sendEmail from "./utils/sendEmail.js"; // ✅ ADD THIS
 
 dotenv.config();
 connectDB();
@@ -19,7 +20,7 @@ connectDB();
 const app = express();
 
 /* ======================
-   CORS (VERY IMPORTANT)
+   CORS
 ====================== */
 const allowedOrigins = [
   "http://localhost:5173",
@@ -66,6 +67,24 @@ app.use("/api/trips", tripRoutes);
 app.use("/api/messages", messageRoutes);
 
 /* ======================
+   TEST EMAIL ROUTE (TEMP)
+====================== */
+app.get("/api/test-email", async (req, res) => {
+  try {
+    await sendEmail({
+      to: "arpitmishra0925@gmail.com",
+      subject: "Buddy Finder Test Email",
+      html: "<h1>Email system works 🎉</h1>",
+    });
+
+    res.json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error("❌ Test email failed:", error.message);
+    res.status(500).json({ message: "Email failed" });
+  }
+});
+
+/* ======================
    SERVER + SOCKET.IO
 ====================== */
 const server = http.createServer(app);
@@ -76,7 +95,7 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
-  transports: ["websocket", "polling"], // ✅ REQUIRED for Render
+  transports: ["websocket", "polling"],
   pingTimeout: 60000,
   pingInterval: 25000,
 });
