@@ -31,31 +31,34 @@ export const registerUser = async (req, res) => {
       email,
       password,
       verificationToken,
+      verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
       isVerified: false,
     });
 
     const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
 
-    sendEmail({
+    await sendEmail({
       to: email,
       subject: "Verify your email - Buddy Finder",
       html: `
         <h2>Welcome to Buddy Finder 👋</h2>
         <p>Please verify your email:</p>
         <a href="${verifyUrl}">${verifyUrl}</a>
+        <p>This link will expire in 24 hours.</p>
       `,
-    }).catch(console.error);
+    });
 
     res.status(201).json({
       message: "Verification email sent. Please check your inbox.",
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Registration failed" });
   }
 };
 
 /* =====================
-   RESEND VERIFICATION EMAIL ✅ (FIX)
+   RESEND VERIFICATION EMAIL
 ===================== */
 export const resendVerificationEmail = async (req, res) => {
   try {
@@ -63,7 +66,7 @@ export const resendVerificationEmail = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    // Do not leak info
+    // Prevent email enumeration
     if (!user) {
       return res.json({
         message: "If this email exists, a verification link has been sent.",
@@ -72,17 +75,19 @@ export const resendVerificationEmail = async (req, res) => {
 
     if (user.isVerified) {
       return res.status(400).json({
-        message: "Email is already verified",
+        message: "Email already verified",
       });
     }
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
     user.verificationToken = verificationToken;
+    user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+
     await user.save();
 
     const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
 
-    sendEmail({
+    await sendEmail({
       to: email,
       subject: "Verify your email - Buddy Finder",
       html: `
@@ -90,13 +95,14 @@ export const resendVerificationEmail = async (req, res) => {
         <p>Click the link below:</p>
         <a href="${verifyUrl}">${verifyUrl}</a>
       `,
-    }).catch(console.error);
+    });
 
     res.json({
       message: "Verification email resent. Please check your inbox.",
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Failed to resend verification email" });
   }
 };
 
@@ -135,7 +141,8 @@ export const loginUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Login failed" });
   }
 };
 
@@ -146,6 +153,7 @@ export const verifyEmail = async (req, res) => {
   try {
     const user = await User.findOne({
       verificationToken: req.params.token,
+      verificationTokenExpires: { $gt: Date.now() },
     });
 
     if (!user) {
@@ -156,13 +164,21 @@ export const verifyEmail = async (req, res) => {
 
     user.isVerified = true;
     user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+
     await user.save();
 
-    res.json({ message: "Email verified successfully" });
+    // ✅ Redirect user to frontend login page
+    res.status(200).json({
+      message: "Email verified successfully",
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: "Email verification failed",
+    });
   }
 };
+
 
 /* =====================
    GET CURRENT USER
@@ -174,18 +190,11 @@ export const getMe = async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  res.json({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    avatar: user.avatar,
-    bio: user.bio,
-    preferences: user.preferences,
-  });
+  res.json(user);
 };
 
 /* =====================
-   UPDATE PROFILE (SAFE)
+   UPDATE PROFILE
 ===================== */
 export const updateProfile = async (req, res) => {
   try {
@@ -209,17 +218,9 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
-    res.json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        bio: user.bio,
-        preferences: user.preferences,
-      },
-    });
+    res.json({ user });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Profile update failed" });
   }
 };
