@@ -79,3 +79,10 @@ BuddyFinder/
 │ └── server.js
 │
 └── .gitignore
+
+
+
+👨‍💻 Author
+
+Arpit Mishra
+Full-Stack Developer
