@@ -27,7 +27,7 @@ const MapBoxView = ({
     map.current = new mapboxgl.Map({
       container: mapRef.current,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [lng || 77.209, lat || 28.6139],
+      center: [lng ?? 77.209, lat ?? 28.6139],
       zoom: lat && lng ? 9 : 4,
     });
 
@@ -43,7 +43,6 @@ const MapBoxView = ({
   useEffect(() => {
     if (!map.current || !lat || !lng) return;
 
-    // remove old marker
     singleMarker.current?.remove();
 
     singleMarker.current = new mapboxgl.Marker()
@@ -55,33 +54,33 @@ const MapBoxView = ({
         const { lng, lat } = e.lngLat;
         singleMarker.current.setLngLat([lng, lat]);
 
-        const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`
-        );
-        const data = await res.json();
+        try {
+          const res = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`
+          );
+          const data = await res.json();
 
-        onSelect?.({
-          lat,
-          lng,
-          address: data.features?.[0]?.place_name || "",
-        });
+          onSelect?.({
+            lat,
+            lng,
+            address: data.features?.[0]?.place_name || "",
+          });
+        } catch (err) {
+          console.error("Reverse geocode failed", err);
+        }
       };
 
       map.current.on("click", clickHandler);
-
-      return () => {
-        map.current?.off("click", clickHandler);
-      };
+      return () => map.current?.off("click", clickHandler);
     }
   }, [lat, lng, mode, onSelect]);
 
   /* =========================
-     MULTIPLE MARKERS (EXPLORE MAP)
+     MULTIPLE MARKERS
   ========================= */
   useEffect(() => {
     if (!map.current || !markers.length) return;
 
-    // clear old markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
@@ -97,8 +96,6 @@ const MapBoxView = ({
       markersRef.current.push(marker);
     });
   }, [markers]);
-
-  mapboxgl.setTelemetryEnabled(false);
 
   /* =========================
      POPUP
