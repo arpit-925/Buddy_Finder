@@ -11,21 +11,41 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user?._id) return;
 
+    // ✅ Create socket only once
     if (!socketRef.current) {
       socketRef.current = io(import.meta.env.VITE_API_URL, {
-        transports: ["websocket"], // 🔥 REQUIRED for Render
-        query: { userId: user._id },
+        auth: {
+          userId: user._id, // ✅ SAFE (matches backend)
+        },
+        withCredentials: true,
+        transports: ["websocket", "polling"], // ✅ REQUIRED for Render
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 2000,
       });
+
+      socketRef.current.on("connect", () => {
+        console.log("🟢 Socket connected:", socketRef.current.id);
+      });
+
+      socketRef.current.on("disconnect", () => {
+        console.log("🔴 Socket disconnected");
+      });
     }
 
+    return () => {
+      // ❌ DO NOT disconnect on rerender
+      // socket should persist while user is logged in
+    };
+  }, [user?._id]);
+
+  // ✅ Disconnect ONLY on logout / app unmount
+  useEffect(() => {
     return () => {
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
-  }, [user?._id]);
+  }, []);
 
   return (
     <SocketContext.Provider value={socketRef.current}>

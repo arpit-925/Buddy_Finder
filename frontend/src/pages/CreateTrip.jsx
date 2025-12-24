@@ -9,17 +9,18 @@ import MapBoxView from "../components/maps/MapBoxView";
 const CreateTrip = () => {
   const { createTrip, loading } = useTrips();
   const navigate = useNavigate();
-  const locationState = useLocation().state;
+
+  // ✅ SAFE location state
+  const { state: locationState } = useLocation();
 
   /* ================= STATE ================= */
   const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(
-    locationState?.image || ""
-  );
+  const [preview, setPreview] = useState(locationState?.image || "");
 
-  const [location, setLocation] = useState(
+  // ✅ RENAMED (no router conflict)
+  const [tripLocation, setTripLocation] = useState(
     locationState?.location || {
-      lat: 28.6139, // default Delhi
+      lat: 28.6139, // Delhi default
       lng: 77.209,
       address: "",
     }
@@ -34,27 +35,33 @@ const CreateTrip = () => {
     description: "",
   });
 
-  /* ================= AUTO-FILL FROM SUGGESTED PLACE ================= */
+  /* ================= AUTO FILL ================= */
   useEffect(() => {
-    if (locationState?.destination) {
+    if (!locationState) return;
+
+    if (locationState.destination) {
       setFormData((prev) => ({
         ...prev,
         destination: locationState.destination,
       }));
     }
 
-    if (locationState?.location) {
-      setLocation(locationState.location);
+    if (locationState.location) {
+      setTripLocation(locationState.location);
     }
 
-    if (locationState?.image) {
+    if (locationState.image) {
       setPreview(locationState.image);
     }
   }, [locationState]);
 
   /* ================= HANDLERS ================= */
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -65,14 +72,14 @@ const CreateTrip = () => {
     }
 
     setImage(file);
-    setPreview(URL.createObjectURL(file)); // UI only
+    setPreview(URL.createObjectURL(file));
   };
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!location?.lat || !location?.lng) {
+    if (!tripLocation?.lat || !tripLocation?.lng) {
       return toast.error("Please select a trip location");
     }
 
@@ -83,11 +90,10 @@ const CreateTrip = () => {
     try {
       let imageUrl = "";
 
-      // ✅ Upload only if user selected a NEW image
       if (image) {
         imageUrl = await uploadImage(image);
       } else if (preview?.startsWith("http")) {
-        imageUrl = preview; // suggested place image
+        imageUrl = preview;
       }
 
       await createTrip({
@@ -95,18 +101,20 @@ const CreateTrip = () => {
         budget: Number(formData.budget),
         maxPeople: Number(formData.maxPeople),
         image: imageUrl,
-        location,
+        location: tripLocation,
       });
 
       toast.success("Trip created successfully 🎉");
       navigate("/explore");
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to create trip");
     }
   };
 
   if (loading) return <Loader fullScreen />;
 
+  /* ================= UI ================= */
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow p-6">
@@ -114,29 +122,30 @@ const CreateTrip = () => {
           Create a New Trip ✈️
         </h2>
 
-        {/* ================= MAP ================= */}
+        {/* MAP */}
         <div className="mb-4">
           <MapBoxView
-            lat={location.lat}
-            lng={location.lng}
+            lat={tripLocation?.lat ?? 28.6139}
+            lng={tripLocation?.lng ?? 77.209}
             mode="edit"
-            onSelect={setLocation}
+            onSelect={setTripLocation}
           />
-          {location.address && (
+
+          {tripLocation.address && (
             <p className="text-sm text-gray-500 mt-1">
-              📍 {location.address}
+              📍 {tripLocation.address}
             </p>
           )}
         </div>
 
-        {/* ================= FORM ================= */}
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="destination"
             value={formData.destination}
-            className="input w-full"
             onChange={handleChange}
             placeholder="Destination"
+            className="input w-full"
             required
           />
 
@@ -154,15 +163,17 @@ const CreateTrip = () => {
             <input
               type="date"
               name="startDate"
-              className="input w-full"
+              value={formData.startDate}
               onChange={handleChange}
+              className="input w-full"
               required
             />
             <input
               type="date"
               name="endDate"
-              className="input w-full"
+              value={formData.endDate}
               onChange={handleChange}
+              className="input w-full"
               required
             />
           </div>
@@ -171,25 +182,28 @@ const CreateTrip = () => {
             <input
               type="number"
               name="budget"
+              value={formData.budget}
+              onChange={handleChange}
               placeholder="Budget (₹)"
               className="input w-full"
-              onChange={handleChange}
             />
             <input
               type="number"
               name="maxPeople"
+              value={formData.maxPeople}
+              onChange={handleChange}
               placeholder="Max People"
               className="input w-full"
-              onChange={handleChange}
               required
             />
           </div>
 
           <textarea
             name="description"
-            className="input w-full h-28"
-            placeholder="Describe your trip..."
+            value={formData.description}
             onChange={handleChange}
+            placeholder="Describe your trip..."
+            className="input w-full h-28"
             required
           />
 

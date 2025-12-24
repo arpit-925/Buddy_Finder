@@ -13,24 +13,23 @@ import messageRoutes from "./routes/messageRoutes.js";
 import socketHandler from "./socket/socket.js";
 import userRoutes from "./routes/userRoutes.js";
 
-
-
 dotenv.config();
 connectDB();
 
 const app = express();
 
 /* ======================
-   CORS (FIRST)
+   CORS (VERY IMPORTANT)
 ====================== */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://buddyfinder-du2b.vercel.app",
+];
+
 app.use(
   cors({
-    origin: ["http://localhost:5173",
-    "https://buddyfinder-du2b.vercel.app"
-    ],
-    // credentials: true,
-    // methods: ["GET", "POST", "PUT", "DELETE"],
-    // allowedHeaders: ["Content-Type", "Authorization"],
+    origin: allowedOrigins,
+    credentials: true,
   })
 );
 
@@ -48,8 +47,6 @@ app.use(
   })
 );
 
-app.use("/api/users", userRoutes);
-
 /* ======================
    RATE LIMIT
 ====================== */
@@ -64,32 +61,35 @@ app.use(limiter);
    ROUTES
 ====================== */
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/api/messages", messageRoutes);
 
 /* ======================
-   SERVER + SOCKET
+   SERVER + SOCKET.IO
 ====================== */
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      "https://buddyfinder-du2b.vercel.app",
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
-
-  transports: ["websocket"],   // 🔥 IMPORTANT
-  allowEIO3: true,             // 🔥 IMPORTANT
+  transports: ["websocket", "polling"], // ✅ REQUIRED for Render
   pingTimeout: 60000,
   pingInterval: 25000,
 });
 
-
+/* ======================
+   SOCKET HANDLER
+====================== */
 socketHandler(io);
 
+/* ======================
+   START SERVER
+====================== */
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

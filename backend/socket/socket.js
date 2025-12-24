@@ -4,67 +4,85 @@ import Notification from "../models/Notification.js";
 
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
+    console.log("🟢 Socket connected:", socket.id);
 
-    // 🔹 Join personal room for notifications
-    const userId = socket.handshake.query.userId;
-    if (userId) {
-      socket.join(userId);
+    /* =====================
+       AUTH USER (SAFE)
+    ===================== */
+    const userId = socket.handshake.auth?.userId;
+
+    if (!userId) {
+      console.log("❌ Unauthorized socket connection");
+      socket.disconnect();
+      return;
     }
+
+    socket.userId = userId;
+    socket.join(userId); // personal room
+    console.log(`👤 User room joined: ${userId}`);
 
     /* =====================
        JOIN TRIP ROOM
     ===================== */
-    socket.on("joinRoom", ({ tripId }) => {
+    socket.on("joinRoom", async ({ tripId }) => {
+      if (!tripId) return;
+
       socket.join(tripId);
-      console.log(`User joined trip room ${tripId}`);
+      console.log(`📍 User joined trip room: ${tripId}`);
     });
 
     /* =====================
        SEND MESSAGE
     ===================== */
-    socket.on("sendMessage", async ({ tripId, senderId, message }) => {
+    socket.on("sendMessage", async ({ tripId, message }) => {
       try {
+        if (!tripId || !message) return;
+
         const trip = await Trip.findById(tripId);
         if (!trip) return;
 
-        // Security check
-        if (!trip.joinedUsers.some(id => id.toString() === senderId)) return;
+        // ✅ SECURITY CHECK
+        const isMember = trip.joinedUsers.some(
+          (id) => id.toString() === socket.userId
+        );
+        if (!isMember) return;
 
         // Save message
         const newMessage = await Message.create({
           tripId,
-          senderId,
+          senderId: socket.userId,
           message,
         });
 
-        // Emit message to trip room
+        // Emit message to room
         io.to(tripId).emit("receiveMessage", newMessage);
 
-        // 🔔 Create & emit notifications to other users
-        for (const memberId of trip.joinedUsers) {
-          if (memberId.toString() !== senderId) {
-            // Save notification in DB
-            await Notification.create({
-              userId: memberId,
-              message: "New message in trip chat 💬",
-              type: "NEW_MESSAGE",
-            });
+        // Prepare notifications (non-blocking)
+        const notifications = trip.joinedUsers
+          .filter((id) => id.toString() !== socket.userId)
+          .map((memberId) => ({
+            userId: memberId,
+            message: "New message in trip chat 💬",
+            type: "NEW_MESSAGE",
+          }));
 
-            // Emit notification in real-time
-            io.to(memberId.toString()).emit("notification", {
-              message: "New message in trip chat 💬",
+        if (notifications.length) {
+          await Notification.insertMany(notifications);
+
+          notifications.forEach((n) => {
+            io.to(n.userId.toString()).emit("notification", {
+              message: n.message,
               tripId,
             });
-          }
+          });
         }
       } catch (error) {
-        console.log("Socket error:", error.message);
+        console.error("🔥 Socket error:", error.message);
       }
     });
 
     socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
+      console.log("🔴 Socket disconnected:", socket.id);
     });
   });
 };
