@@ -25,26 +25,22 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      setLoading(true);
-
-      // ✅ Backend stores user + sends verification email
-      const res = await registerUser(formData);
-
-      toast.success(
-        res.message || "Verification email sent. Please check your inbox 📧"
-      );
-
-      // ✅ Redirect to login (REAL APP FLOW)
-      navigate("/login", { replace: true });
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  e.preventDefault();
+  try {
+    setLoading(true);
+    await registerUser(formData);
+    
+    // Flash the message
+    toast.success("Account created! Please verify your email to continue.");
+    
+    // Move to login page while they wait for the email
+    navigate("/login"); 
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Signup failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-300">

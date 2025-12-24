@@ -147,7 +147,7 @@ export const loginUser = async (req, res) => {
 };
 
 /* =====================
-   VERIFY EMAIL
+   VERIFY EMAIL (FIXED FOR AUTO-LOGIN)
 ===================== */
 export const verifyEmail = async (req, res) => {
   try {
@@ -162,23 +162,35 @@ export const verifyEmail = async (req, res) => {
       });
     }
 
+    // 1. Mark user as verified
     user.isVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
-
     await user.save();
 
-    // ✅ Redirect user to frontend login page
+    // 2. Generate token so the user is "Logged In" immediately
+    const token = generateToken(user._id);
+
+    // 3. Return the same structure as your loginUser function
     res.status(200).json({
-      message: "Email verified successfully",
+      message: "Email verified successfully 🎉",
+      token, // This is key for auto-login
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        bio: user.bio,
+        preferences: user.preferences,
+      },
     });
   } catch (error) {
+    console.error("Verification Error:", error);
     res.status(500).json({
       message: "Email verification failed",
     });
   }
 };
-
 
 /* =====================
    GET CURRENT USER
