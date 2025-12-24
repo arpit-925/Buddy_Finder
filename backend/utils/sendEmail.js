@@ -1,23 +1,29 @@
 import nodemailer from "nodemailer";
 
 const sendEmail = async ({ to, subject, html }) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false, // true only for port 465
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-  await transporter.sendMail({
-    from: `"Buddy Finder" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+    await transporter.sendMail({
+      from: `"Buddy Finder" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+
+    console.log("📧 Email sent to:", to);
+  } catch (error) {
+    console.error("❌ Email send failed:", error.message);
+    throw error;
+  }
 };
 
 export default sendEmail;
-

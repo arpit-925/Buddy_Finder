@@ -30,7 +30,8 @@ const VerifyEmail = () => {
 
         // 3. ✅ Automatic redirect to dashboard
         setTimeout(() => {
-          navigate("/dashboard", { replace: true }); 
+          // navigate("/dashboard", { replace: true }); 
+          navigate("/",{replace:true});
         }, 2000);
       } catch (err) {
         setStatus("error");
