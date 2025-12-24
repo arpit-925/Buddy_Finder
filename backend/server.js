@@ -71,18 +71,21 @@ app.use("/api/messages", messageRoutes);
    SERVER + SOCKET
 ====================== */
 const server = http.createServer(app);
-
 const io = new Server(server, {
   cors: {
-    origin:["http://localhost:5173",
-      "https://buddyfinder-du2b.vercel.app/",
+    origin: [
+      "http://localhost:5173",
+      "https://buddyfinder-du2b.vercel.app",
     ],
-
-    methods: ["GET","POST"],
-    credentials: true,
+    methods: ["GET", "POST"],
   },
-  pingTimeout:60000,
+
+  transports: ["websocket"],   // 🔥 IMPORTANT
+  allowEIO3: true,             // 🔥 IMPORTANT
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
+
 
 socketHandler(io);
 

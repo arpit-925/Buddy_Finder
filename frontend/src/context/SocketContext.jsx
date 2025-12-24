@@ -1,4 +1,3 @@
-// SocketContext.jsx
 import { createContext, useContext, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { AuthContext } from "./AuthContext";
@@ -12,11 +11,15 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user?._id) return;
 
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      query: { userId: user._id },
-      transports: ["websocket", "polling"], // 🔥 important for Render
-      withCredentials: true,
-    });
+    if (!socketRef.current) {
+      socketRef.current = io(import.meta.env.VITE_API_URL, {
+        transports: ["websocket"], // 🔥 REQUIRED for Render
+        query: { userId: user._id },
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 2000,
+      });
+    }
 
     return () => {
       socketRef.current?.disconnect();
