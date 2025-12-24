@@ -63,3 +63,19 @@ Buddy Finder is a full-stack travel companion platform where users can **create 
 
 ## 📁 Project Structure
 
+
+BuddyFinder/
+│
+├── frontend/
+│ ├── src/
+│ ├── public/
+│ └── vite.config.js
+│
+├── backend/
+│ ├── controllers/
+│ ├── routes/
+│ ├── models/
+│ ├── middleware/
+│ └── server.js
+│
+└── .gitignore
