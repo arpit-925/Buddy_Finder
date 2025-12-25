@@ -156,9 +156,28 @@ export const updateTrip = async (req, res) => {
       };
     }
 
+    // await trip.save();
+    // res.json({ message: "Trip updated successfully" });
+
     await trip.save();
-    res.json({ message: "Trip updated successfully" });
-  } catch {
+
+    // 🔁 Return UPDATED trip (IMPORTANT PART)
+    const updatedTrip = await Trip.findById(trip._id)
+      .populate("createdBy", "name email avatar")
+      .populate("joinedUsers", "name email avatar");
+
+    const t = updatedTrip.toObject();
+    if (t.location?.coordinates) {
+      t.location = {
+        lng: t.location.coordinates[0],
+        lat: t.location.coordinates[1],
+        address: t.location.address,
+      };
+    }
+
+    res.json(t);
+ } catch (error) {
+    console.error("Update trip error:", error);
     res.status(500).json({ message: "Failed to update trip" });
   }
 };
