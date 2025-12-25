@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const tripSchema = new mongoose.Schema(
   {
     destination: { type: String, required: true },
-
+image: { type: String },
     location: {
       type: {
         type: String,
