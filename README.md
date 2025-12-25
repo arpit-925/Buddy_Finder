@@ -82,6 +82,16 @@ BuddyFinder/
 
 
 
+Email Delivery Note
+
+Email delivery may be delayed by 2–5 minutes when using free hosting services due to server cold starts.
+
+Free SMTP providers (e.g., Gmail) may queue or scan emails, causing additional delay.
+
+For instant email delivery, it is recommended to use a transactional email service like SendGrid / Resend / Brevo in production.
+
+
+
 👨‍💻 Author
 
 Arpit Mishra
