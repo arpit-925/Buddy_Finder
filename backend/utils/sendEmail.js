@@ -7,13 +7,13 @@ const sendEmail = async ({ to, subject, html }) => {
       port: Number(process.env.EMAIL_PORT),
       secure: false,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.EMAIL_USER, // apikey
+        pass: process.env.EMAIL_PASS, // Brevo SMTP key
       },
     });
 
     await transporter.sendMail({
-      from: `"Buddy Finder" <${process.env.EMAIL_USER}>`,
+      from: `"Buddy Finder" <${process.env.EMAIL_FROM}>`,
       to,
       subject,
       html,
