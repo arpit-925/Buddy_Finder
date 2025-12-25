@@ -7,7 +7,7 @@ const socketHandler = (io) => {
     console.log("🟢 Socket connected:", socket.id);
 
     /* =====================
-       AUTH USER (SAFE)
+       AUTH USER
     ===================== */
     const userId = socket.handshake.auth?.userId;
 
@@ -22,13 +22,31 @@ const socketHandler = (io) => {
     console.log(`👤 User room joined: ${userId}`);
 
     /* =====================
-       JOIN TRIP ROOM
+       JOIN TRIP ROOM (SECURE)
     ===================== */
     socket.on("joinRoom", async ({ tripId }) => {
-      if (!tripId) return;
+      try {
+        if (!tripId) return;
 
-      socket.join(tripId);
-      console.log(`📍 User joined trip room: ${tripId}`);
+        const trip = await Trip.findById(tripId);
+        if (!trip) return;
+
+        const isMember =
+          trip.createdBy.toString() === socket.userId ||
+          trip.joinedUsers.some(
+            (id) => id.toString() === socket.userId
+          );
+
+        if (!isMember) {
+          console.log("❌ Non-member tried to join trip room");
+          return;
+        }
+
+        socket.join(tripId);
+        console.log(`📍 User joined trip room: ${tripId}`);
+      } catch (err) {
+        console.error("Join room error:", err.message);
+      }
     });
 
     /* =====================
@@ -41,36 +59,43 @@ const socketHandler = (io) => {
         const trip = await Trip.findById(tripId);
         if (!trip) return;
 
-        // ✅ SECURITY CHECK
-       const isMember =
-  trip.createdBy.toString() === socket.userId ||
-  trip.joinedUsers.some((id) => id.toString() === socket.userId);
+        // ✅ HOST + JOINED USERS ALLOWED
+        const isMember =
+          trip.createdBy.toString() === socket.userId ||
+          trip.joinedUsers.some(
+            (id) => id.toString() === socket.userId
+          );
 
-        if (!isMember) return;
+        if (!isMember) {
+          console.log("❌ Non-member tried to send message");
+          return;
+        }
 
-       // 1️⃣ Save message
-const savedMessage = await Message.create({
-  tripId,
-  senderId: socket.userId,
-  message,
-});
+        // 1️⃣ Save message
+        const savedMessage = await Message.create({
+          tripId,
+          senderId: socket.userId,
+          message,
+        });
 
-// 2️⃣ Re-fetch populated message (IMPORTANT)
-const populatedMessage = await Message.findById(savedMessage._id)
-  .populate("senderId", "name avatar");
+        // 2️⃣ Populate sender (IMPORTANT)
+        const populatedMessage = await Message.findById(savedMessage._id)
+          .populate("senderId", "name avatar");
 
-// 3️⃣ Emit FINAL saved message
-io.to(tripId).emit("receiveMessage", populatedMessage);
+        // 3️⃣ Emit saved + populated message
+        io.to(tripId).emit("receiveMessage", populatedMessage);
 
+        // 🔔 Notify other participants (excluding sender)
+        const recipients = [
+          trip.createdBy,
+          ...trip.joinedUsers,
+        ].filter((id) => id.toString() !== socket.userId);
 
-        // Prepare notifications (non-blocking)
-        const notifications = trip.joinedUsers
-          .filter((id) => id.toString() !== socket.userId)
-          .map((memberId) => ({
-            userId: memberId,
-            message: "New message in trip chat 💬",
-            type: "NEW_MESSAGE",
-          }));
+        const notifications = recipients.map((userId) => ({
+          userId,
+          message: "New message in trip chat 💬",
+          type: "NEW_MESSAGE",
+        }));
 
         if (notifications.length) {
           await Notification.insertMany(notifications);
