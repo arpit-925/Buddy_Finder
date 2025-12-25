@@ -25,6 +25,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://buddyfinder-du2b.vercel.app",
+  "https://buddy-finder-mh40.onrender.com",
 ];
 
 app.use(
@@ -44,6 +45,7 @@ app.use(express.json());
 ====================== */
 app.use(
   helmet({
+    contentSecurityPolicy:false,
     crossOriginResourcePolicy: false,
   })
 );

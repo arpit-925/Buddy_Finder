@@ -23,7 +23,7 @@ router.get("/", getAllTrips);          // Explore Trips
 router.get("/:id", getTripById);       // Trip Details
 
 // 🔐 PROTECTED ROUTES
-router.post("/create", protect, createTripValidation, validate, createTrip);
+router.post("/", protect, createTripValidation, validate, createTrip);
 router.put("/:id", protect, updateTrip);        // ✏️ Edit
 router.delete("/:id", protect, deleteTrip);     // 🗑️ Delete
 
