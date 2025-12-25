@@ -139,17 +139,27 @@ const TripDetails = () => {
           </div>
 
           {/* MAP */}
-          {trip.location?.lat && (
-            <div className="bg-white rounded-xl shadow p-4">
-              <h3 className="font-semibold mb-2">Trip Location</h3>
-              <MapBoxView lat={trip.location.lat} lng={trip.location.lng} />
-              {trip.location.address && (
-                <p className="text-sm text-gray-500 mt-2">
-                  📍 {trip.location.address}
-                </p>
-              )}
-            </div>
-          )}
+         
+{trip.location &&
+ trip.location.lat != null &&
+ trip.location.lng != null && (
+  <div className="bg-white rounded-xl shadow p-4">
+    <h3 className="font-semibold mb-2">Trip Location</h3>
+
+    <MapBoxView
+      lat={Number(trip.location.lat)}
+      lng={Number(trip.location.lng)}
+    />
+
+    {trip.location.address && (
+      <p className="text-sm text-gray-500 mt-2">
+        📍 {trip.location.address}
+      </p>
+    )}
+  </div>
+)}
+
+
         </div>
 
         {/* ================= RIGHT ================= */}

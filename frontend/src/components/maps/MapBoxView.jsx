@@ -8,18 +8,18 @@ const MapBoxView = ({
   lat,
   lng,
   markers = [],
-  mode = "view", // "view" | "edit"
+  mode = "view",
   onSelect,
 }) => {
   const mapRef = useRef(null);
   const map = useRef(null);
   const singleMarker = useRef(null);
-  const markersRef = useRef([]);
-  const popupRef = useRef(null);
-  const [popupData, setPopupData] = useState(null);
+
+  const latNum = Number(lat);
+  const lngNum = Number(lng);
 
   /* =========================
-     INIT MAP (ONLY ONCE)
+     INIT MAP
   ========================= */
   useEffect(() => {
     if (!mapRef.current || map.current) return;
@@ -27,27 +27,33 @@ const MapBoxView = ({
     map.current = new mapboxgl.Map({
       container: mapRef.current,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [lng ?? 77.209, lat ?? 28.6139],
-      zoom: lat && lng ? 9 : 4,
+      center: [lngNum || 77.209, latNum || 28.6139],
+      zoom: latNum && lngNum ? 9 : 4,
     });
 
-    return () => {
-      map.current?.remove();
-      map.current = null;
-    };
+    return () => map.current?.remove();
   }, []);
 
   /* =========================
-     SINGLE MARKER (VIEW / EDIT)
+     SINGLE MARKER + FLY
   ========================= */
   useEffect(() => {
-    if (!map.current || !lat || !lng) return;
+    if (!map.current || isNaN(latNum) || isNaN(lngNum)) return;
 
+    // remove old marker
     singleMarker.current?.remove();
 
+    // add marker
     singleMarker.current = new mapboxgl.Marker()
-      .setLngLat([lng, lat])
+      .setLngLat([lngNum, latNum])
       .addTo(map.current);
+
+    // move map to location
+    map.current.flyTo({
+      center: [lngNum, latNum],
+      zoom: 10,
+      essential: true,
+    });
 
     if (mode === "edit") {
       const clickHandler = async (e) => {
@@ -71,47 +77,9 @@ const MapBoxView = ({
       };
 
       map.current.on("click", clickHandler);
-      return () => map.current?.off("click", clickHandler);
+      return () => map.current.off("click", clickHandler);
     }
-  }, [lat, lng, mode, onSelect]);
-
-  /* =========================
-     MULTIPLE MARKERS
-  ========================= */
-  useEffect(() => {
-    if (!map.current || !markers.length) return;
-
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-
-    markers.forEach((m) => {
-      const marker = new mapboxgl.Marker()
-        .setLngLat([m.lng, m.lat])
-        .addTo(map.current);
-
-      marker.getElement().addEventListener("click", () => {
-        setPopupData(m);
-      });
-
-      markersRef.current.push(marker);
-    });
-  }, [markers]);
-
-  /* =========================
-     POPUP
-  ========================= */
-  useEffect(() => {
-    if (!popupData || !map.current) return;
-
-    popupRef.current?.remove();
-
-    popupRef.current = new mapboxgl.Popup({ offset: 25 })
-      .setLngLat([popupData.lng, popupData.lat])
-      .setHTML(popupData.popup)
-      .addTo(map.current);
-
-    return () => popupRef.current?.remove();
-  }, [popupData]);
+  }, [latNum, lngNum, mode, onSelect]);
 
   return (
     <div
