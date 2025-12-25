@@ -55,7 +55,7 @@ const TripDetails = () => {
     }
 
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this trip? This action cannot be undone."
+      "Are you sure you want to delete this trip?"
     );
     if (!confirmDelete) return;
 
@@ -83,15 +83,22 @@ const TripDetails = () => {
   }
 
   const userId = user?._id?.toString();
-  const isCreator = trip.createdBy?._id?.toString() === userId;
 
-  const isJoined = trip.joinedUsers?.some(
-    (u) => u === userId || u?._id === userId
-  );
+  const isCreator =
+    trip.createdBy?._id?.toString() === userId;
 
-  const isRequested = trip.joinRequests?.some(
-    (u) => u === userId || u?._id === userId
-  );
+  const isJoined =
+    trip.joinedUsers?.some(
+      (u) => u === userId || u?._id === userId
+    );
+
+  const isRequested =
+    trip.joinRequests?.some(
+      (u) => u === userId || u?._id === userId
+    );
+
+  // ✅ IMPORTANT FIX
+  const isParticipant = isCreator || isJoined;
 
   const spotsLeft = trip.maxPeople - trip.joinedUsers.length;
   const isClosed = trip.status === "CLOSED";
@@ -111,7 +118,9 @@ const TripDetails = () => {
 
             <div className="p-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">{trip.destination}</h1>
+                <h1 className="text-2xl font-bold">
+                  {trip.destination}
+                </h1>
 
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -129,37 +138,42 @@ const TripDetails = () => {
                 {new Date(trip.endDate).toLocaleDateString()}
               </p>
 
-              <p className="mt-4 text-gray-700">{trip.description}</p>
+              <p className="mt-4 text-gray-700">
+                {trip.description}
+              </p>
 
               <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
-                <p><strong>Budget:</strong> ₹{trip.budget}</p>
-                <p><strong>Spots Left:</strong> {spotsLeft}</p>
+                <p>
+                  <strong>Budget:</strong> ₹{trip.budget}
+                </p>
+                <p>
+                  <strong>Spots Left:</strong> {spotsLeft}
+                </p>
               </div>
             </div>
           </div>
 
           {/* MAP */}
-         
-{trip.location &&
- trip.location.lat != null &&
- trip.location.lng != null && (
-  <div className="bg-white rounded-xl shadow p-4">
-    <h3 className="font-semibold mb-2">Trip Location</h3>
+          {trip.location &&
+            trip.location.lat != null &&
+            trip.location.lng != null && (
+              <div className="bg-white rounded-xl shadow p-4">
+                <h3 className="font-semibold mb-2">
+                  Trip Location
+                </h3>
 
-    <MapBoxView
-      lat={Number(trip.location.lat)}
-      lng={Number(trip.location.lng)}
-    />
+                <MapBoxView
+                  lat={Number(trip.location.lat)}
+                  lng={Number(trip.location.lng)}
+                />
 
-    {trip.location.address && (
-      <p className="text-sm text-gray-500 mt-2">
-        📍 {trip.location.address}
-      </p>
-    )}
-  </div>
-)}
-
-
+                {trip.location.address && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    📍 {trip.location.address}
+                  </p>
+                )}
+              </div>
+            )}
         </div>
 
         {/* ================= RIGHT ================= */}
@@ -168,16 +182,24 @@ const TripDetails = () => {
           {/* HOST */}
           <div className="bg-white rounded-xl shadow p-4">
             <h3 className="font-semibold mb-2">Trip Host</h3>
-            <p className="font-medium">{trip.createdBy?.name}</p>
-            <p className="text-sm text-gray-500">{trip.createdBy?.email}</p>
+            <p className="font-medium">
+              {trip.createdBy?.name}
+            </p>
+            <p className="text-sm text-gray-500">
+              {trip.createdBy?.email}
+            </p>
           </div>
 
           {/* ACTIONS */}
           <div className="bg-white rounded-xl shadow p-4 space-y-3">
-            {isCreator ? (
+
+            {/* HOST ACTIONS */}
+            {isCreator && (
               <>
                 <button
-                  onClick={() => navigate(`/edit-trip/${trip._id}`)}
+                  onClick={() =>
+                    navigate(`/edit-trip/${trip._id}`)
+                  }
                   className="w-full bg-yellow-500 text-white py-2 rounded"
                 >
                   ✏️ Edit Trip
@@ -188,27 +210,44 @@ const TripDetails = () => {
                   disabled={deleting}
                   className="w-full bg-red-600 text-white py-2 rounded disabled:opacity-60"
                 >
-                  {deleting ? "Deleting..." : "🗑️ Delete Trip"}
+                  {deleting
+                    ? "Deleting..."
+                    : "🗑️ Delete Trip"}
                 </button>
               </>
-            ) : isJoined ? (
+            )}
+
+            {/* CHAT FOR HOST + JOINED USERS */}
+            {isParticipant && (
               <button
-                onClick={() => navigate(`/chat/${trip._id}`)}
+                onClick={() =>
+                  navigate(`/chat/${trip._id}`)
+                }
                 className="w-full bg-green-600 text-white py-2 rounded"
               >
                 Open Chat 💬
               </button>
-            ) : isRequested ? (
-              <button disabled className="w-full bg-gray-300 py-2 rounded">
-                Request Sent
-              </button>
-            ) : (
+            )}
+
+            {/* JOIN LOGIC */}
+            {!isParticipant && !isRequested && (
               <button
                 onClick={handleJoinTrip}
-                disabled={joining || spotsLeft === 0 || isClosed}
+                disabled={
+                  joining || spotsLeft === 0 || isClosed
+                }
                 className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60"
               >
                 {joining ? "Sending..." : "Join Trip"}
+              </button>
+            )}
+
+            {isRequested && (
+              <button
+                disabled
+                className="w-full bg-gray-300 py-2 rounded"
+              >
+                Request Sent
               </button>
             )}
           </div>
@@ -216,8 +255,13 @@ const TripDetails = () => {
           {/* JOIN REQUESTS */}
           {isCreator && (
             <div className="bg-white rounded-xl shadow p-4">
-              <h3 className="font-semibold mb-3">Join Requests</h3>
-              <JoinRequests trip={trip} refreshTrip={fetchTrip} />
+              <h3 className="font-semibold mb-3">
+                Join Requests
+              </h3>
+              <JoinRequests
+                trip={trip}
+                refreshTrip={fetchTrip}
+              />
             </div>
           )}
         </div>
