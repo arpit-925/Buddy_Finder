@@ -42,20 +42,26 @@ const socketHandler = (io) => {
         if (!trip) return;
 
         // ✅ SECURITY CHECK
-        const isMember = trip.joinedUsers.some(
-          (id) => id.toString() === socket.userId
-        );
+       const isMember =
+  trip.createdBy.toString() === socket.userId ||
+  trip.joinedUsers.some((id) => id.toString() === socket.userId);
+
         if (!isMember) return;
 
-        // Save message
-        const newMessage = await Message.create({
-          tripId,
-          senderId: socket.userId,
-          message,
-        });
+       // 1️⃣ Save message
+const savedMessage = await Message.create({
+  tripId,
+  senderId: socket.userId,
+  message,
+});
 
-        // Emit message to room
-        io.to(tripId).emit("receiveMessage", newMessage);
+// 2️⃣ Re-fetch populated message (IMPORTANT)
+const populatedMessage = await Message.findById(savedMessage._id)
+  .populate("senderId", "name avatar");
+
+// 3️⃣ Emit FINAL saved message
+io.to(tripId).emit("receiveMessage", populatedMessage);
+
 
         // Prepare notifications (non-blocking)
         const notifications = trip.joinedUsers

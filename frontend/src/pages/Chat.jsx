@@ -53,17 +53,23 @@ const Chat = () => {
     };
   }, [socket, tripId]);
 
-  const sendMessage = () => {
+  const sendMessage =async () => {
     if (!text.trim()) return;
 
-    socket.emit("sendMessage", {
+    try {
+    const savedMessage = await api.post("/messages/send", {
       tripId,
-      senderId: user._id,
       message: text,
     });
 
+
+    socket.emit("sendMessage", savedMessage.data);
+
     setText("");
-  };
+  } catch {
+    toast.error("Message failed");
+  }
+};
 
   if (loading) return <Loader fullScreen />;
 
