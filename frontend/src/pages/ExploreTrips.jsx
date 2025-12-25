@@ -181,11 +181,19 @@ const ExploreTrips = () => {
                       key={trip._id}
                       className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden"
                     >
-                      <img
+                      {/* <img
                         src={trip.image}
                         alt={trip.destination}
                         className="h-48 w-full object-cover"
-                      />
+                      /> */}
+                      <img
+  src={trip.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1000&auto=format&fit=crop"}
+  alt={trip.destination}
+  onError={(e) => {
+    e.target.src = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1000&auto=format&fit=crop";
+  }}
+  className="h-48 w-full object-cover"
+/>
                       <div className="p-4">
                         <h3 className="font-semibold">
                           {trip.destination}

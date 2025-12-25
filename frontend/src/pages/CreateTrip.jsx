@@ -95,7 +95,8 @@ const CreateTrip = () => {
       } else if (preview?.startsWith("http")) {
         imageUrl = preview;
       }
-
+// Inside handleSubmit, right before await createTrip(...)
+console.log("Saving trip with Image URL:", imageUrl);
       await createTrip({
         ...formData,
         budget: Number(formData.budget),
