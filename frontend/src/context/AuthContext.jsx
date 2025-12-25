@@ -7,35 +7,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   /* =========================
-     LOAD USER ON APP START
+     LOAD AUTH ON APP START
   ========================= */
   useEffect(() => {
-    const storedAuth = localStorage.getItem("user");
+    const storedAuth = localStorage.getItem("auth");
     if (storedAuth) {
-      setAuth(JSON.parse(storedAuth));
+      try {
+        setAuth(JSON.parse(storedAuth));
+      } catch {
+        localStorage.removeItem("auth");
+      }
     }
     setLoading(false);
   }, []);
 
   /* =========================
-     LOGIN
+     LOGIN (used by Login + VerifyEmail)
   ========================= */
   const login = (data) => {
     // data = { user, token }
-    localStorage.setItem("user", JSON.stringify(data));
+    localStorage.setItem("auth", JSON.stringify(data));
     setAuth(data);
   };
 
   /* =========================
-     UPDATE USER (PROFILE EDIT)
+     UPDATE USER
   ========================= */
   const updateUser = (updatedUser) => {
     setAuth((prev) => {
+      if (!prev) return prev;
+
       const newAuth = {
         ...prev,
         user: updatedUser,
       };
-      localStorage.setItem("user", JSON.stringify(newAuth));
+
+      localStorage.setItem("auth", JSON.stringify(newAuth));
       return newAuth;
     });
   };
@@ -44,8 +51,8 @@ export const AuthProvider = ({ children }) => {
      LOGOUT
   ========================= */
   const logout = () => {
+    localStorage.removeItem("auth");
     setAuth(null);
-    localStorage.removeItem("user");
   };
 
   return (
