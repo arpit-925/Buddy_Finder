@@ -20,7 +20,11 @@ const router = express.Router();
 
 // 🌍 PUBLIC ROUTES
 router.get("/", getAllTrips);          // Explore Trips
+
+
+router.get("/edit/:id", protect, getTripById);
 router.get("/:id", getTripById);       // Trip Details
+
 
 // 🔐 PROTECTED ROUTES
 router.post("/", protect, createTripValidation, validate, createTrip);

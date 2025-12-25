@@ -5,6 +5,8 @@ import Loader from "../components/common/Loader";
 import toast from "react-hot-toast";
 import { uploadImage } from "../utils/uploadImage";
 import MapBoxView from "../components/maps/MapBoxView";
+import api from "../services/api";
+
 
 const EditTrip = () => {
   const { id } = useParams();
@@ -29,32 +31,35 @@ const EditTrip = () => {
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    const fetchTrip = async () => {
-      try {
-        const res = await fetch(`/api/trips/${id}`);
-        const trip = await res.json();
+  const fetchTrip = async () => {
+    try {
+      const res = await api.get(`/trips/edit/${id}`);
 
-        setFormData({
-          destination: trip.destination,
-          startDate: trip.startDate.split("T")[0],
-          endDate: trip.endDate.split("T")[0],
-          budget: trip.budget || "",
-          maxPeople: trip.maxPeople,
-          description: trip.description,
-        });
+      const trip = res.data;
 
-        setLocation(trip.location);
-        setPreview(trip.image);
-      } catch {
-        toast.error("Failed to load trip");
-        navigate("/explore");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setFormData({
+        destination: trip.destination || "",
+        startDate: trip.startDate?.split("T")[0] || "",
+        endDate: trip.endDate?.split("T")[0] || "",
+        budget: trip.budget || "",
+        maxPeople: trip.maxPeople || "",
+        description: trip.description || "",
+      });
 
-    fetchTrip();
-  }, [id, navigate]);
+      setLocation(trip.location);
+      setPreview(trip.image);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load trip");
+      navigate("/explore");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchTrip();
+}, [id, navigate]);
+
 
   /* ================= HANDLERS ================= */
   const handleChange = (e) =>
