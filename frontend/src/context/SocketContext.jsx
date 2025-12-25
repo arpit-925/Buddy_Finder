@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { AuthContext } from "./AuthContext";
 
@@ -7,48 +7,45 @@ const SocketContext = createContext(null);
 export const SocketProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null); // ✅ React-tracked
 
   useEffect(() => {
     if (!user?._id) return;
 
-    // ✅ Create socket only once
-    if (!socketRef.current) {
-      socketRef.current = io(import.meta.env.VITE_API_URL, {
-        auth: {
-          userId: user._id, // ✅ SAFE (matches backend)
-        },
-        withCredentials: true,
-        transports: ["websocket", "polling"], // ✅ REQUIRED for Render
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 2000,
-      });
+    // Prevent duplicate connections
+    if (socketRef.current) return;
 
-      socketRef.current.on("connect", () => {
-        console.log("🟢 Socket connected:", socketRef.current.id);
-      });
+    const newSocket = io(import.meta.env.VITE_API_URL, {
+      auth: {
+        userId: user._id,
+      },
+      withCredentials: true,
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+    });
 
-      socketRef.current.on("disconnect", () => {
-        console.log("🔴 Socket disconnected");
-      });
-    }
+    socketRef.current = newSocket;
+    setSocket(newSocket); // ✅ This fixes React error #310
+
+    newSocket.on("connect", () => {
+      console.log("🟢 Socket connected:", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("🔴 Socket disconnected");
+    });
 
     return () => {
-      // ❌ DO NOT disconnect on rerender
-      // socket should persist while user is logged in
+      newSocket.disconnect();
+      socketRef.current = null;
+      setSocket(null);
     };
   }, [user?._id]);
 
-  // ✅ Disconnect ONLY on logout / app unmount
-  useEffect(() => {
-    return () => {
-      socketRef.current?.disconnect();
-      socketRef.current = null;
-    };
-  }, []);
-
   return (
-    <SocketContext.Provider value={socketRef.current}>
+    <SocketContext.Provider value={socket}>
       {children}
     </SocketContext.Provider>
   );
