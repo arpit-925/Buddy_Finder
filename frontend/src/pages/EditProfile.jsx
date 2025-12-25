@@ -24,7 +24,7 @@ const EditProfile = () => {
       setName(user.name || "");
       setBio(user.bio || "");
       setTravelType(user.preferences?.travelType || "");
-      setBudget(user.preferences?.budget || "");
+      setBudget(user.preferences?.budget?.toString() || "");
       setPreview(user.avatar || "https://i.pravatar.cc/150");
     }
   }, [user]);
@@ -52,26 +52,45 @@ const EditProfile = () => {
       let avatarUrl = user.avatar;
 
       // Upload ONLY if new image selected
-      if (image) {
-        avatarUrl = await uploadImage(image);
+    if (image) {
+      // 1. Upload to Cloudinary/S3
+      const uploadedUrl = await uploadImage(image);
+      if (uploadedUrl) {
+        avatarUrl = uploadedUrl;
+      } else {
+        throw new Error("Image upload failed");
       }
+    }
+
+    const budgetValue = budget === "" ? user.preferences?.budget : Number(budget);
 
       const res = await api.put("/users/profile", {
         name,
         bio,
         avatar: avatarUrl,
         preferences: {
-          travelType,
-          budget: Number(budget),
+          travelType: travelType || user.preferences?.travelType,
+          budget: budgetValue,
         },
       });
 
       // ✅ SINGLE SOURCE OF TRUTH
-      updateUser(res.data.user);
+      // updateUser(res.data.user);
+      // 3. Update Context + LocalStorage
+    // Ensure the backend structure matches (res.data.user)
+    if (res.data && res.data.user) {
+      updateUser(res.data.user); 
+      
+      // Cleanup the temporary preview URL to free memory
+      if (preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
 
       toast.success("Profile updated successfully ✅");
       navigate("/profile");
-    } catch (error) {
+    } 
+  }
+    catch (error) {
       toast.error(error.response?.data?.message || "Update failed");
     } finally {
       setSaving(false);

@@ -208,18 +208,23 @@ export const getMe = async (req, res) => {
 /* =====================
    UPDATE PROFILE
 ===================== */
+/* =====================
+   UPDATE PROFILE (FIXED)
+===================== */
 export const updateProfile = async (req, res) => {
   try {
     const { name, bio, avatar, preferences } = req.body;
 
+    // 1. Find the user
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (name !== undefined) user.name = name;
-    if (bio !== undefined) user.bio = bio;
-    if (avatar !== undefined) user.avatar = avatar;
+    // 2. Apply updates
+    if (name) user.name = name;
+    if (bio) user.bio = bio;
+    if (avatar) user.avatar = avatar; // This is the Cloudinary URL from frontend
 
     if (preferences) {
       user.preferences = {
@@ -228,11 +233,22 @@ export const updateProfile = async (req, res) => {
       };
     }
 
-    await user.save();
+    // 3. Save and wait for the DB to confirm
+    const updatedUser = await user.save();
 
-    res.json({ user });
+    // 4. Return the EXACT structure your AuthContext.js expects
+    res.json({
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+        bio: updatedUser.bio,
+        preferences: updatedUser.preferences,
+      },
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Update Error:", error);
     res.status(500).json({ message: "Profile update failed" });
   }
 };
