@@ -6,23 +6,26 @@ import api from "../services/api";
 import Loader from "../components/common/Loader";
 import toast from "react-hot-toast";
 
+let typingTimeout;
+
 const Chat = () => {
   const { tripId } = useParams();
   const { user } = useContext(AuthContext);
-  const { socket } = useSocket();
+  const socket = useSocket();
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [typingUsers, setTypingUsers] = useState([]);
 
   const bottomRef = useRef(null);
 
-  // 🔽 Scroll to bottom
+  /* Scroll to bottom */
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔹 Fetch old messages
+  /* Fetch old messages */
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -38,38 +41,63 @@ const Chat = () => {
     fetchMessages();
   }, [tripId]);
 
-  // 🔹 Socket events
+  /* Socket setup */
   useEffect(() => {
     if (!socket) return;
 
     socket.emit("joinRoom", { tripId });
 
-    socket.on("receiveMessage", (message) => {
-      setMessages((prev) => [...prev, message]);
+    socket.on("receiveMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    socket.on("userTyping", ({ userId }) => {
+      if (userId !== user._id) {
+        setTypingUsers((prev) =>
+          prev.includes(userId) ? prev : [...prev, userId]
+        );
+      }
+    });
+
+    socket.on("userStopTyping", ({ userId }) => {
+      setTypingUsers((prev) => prev.filter((id) => id !== userId));
     });
 
     return () => {
       socket.off("receiveMessage");
+      socket.off("userTyping");
+      socket.off("userStopTyping");
     };
-  }, [socket, tripId]);
+  }, [socket, tripId, user._id]);
 
-  const sendMessage =async () => {
+  /* Send message */
+  const sendMessage = async () => {
     if (!text.trim()) return;
 
     try {
-    const savedMessage = await api.post("/messages/send", {
-      tripId,
-      message: text,
-    });
+      const res = await api.post("/messages/send", {
+        tripId,
+        message: text,
+      });
 
+      socket.emit("sendMessage", res.data);
+      setText("");
+      socket.emit("stopTyping", { tripId });
+    } catch {
+      toast.error("Message failed");
+    }
+  };
 
-    socket.emit("sendMessage", savedMessage.data);
+  /* Typing handler */
+  const handleTyping = (e) => {
+    setText(e.target.value);
+    socket.emit("typing", { tripId });
 
-    setText("");
-  } catch {
-    toast.error("Message failed");
-  }
-};
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      socket.emit("stopTyping", { tripId });
+    }, 1000);
+  };
 
   if (loading) return <Loader fullScreen />;
 
@@ -84,15 +112,13 @@ const Chat = () => {
 
         {/* MESSAGES */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {messages.map((msg, index) => {
-            const isMine = msg.senderId === user._id;
+          {messages.map((msg) => {
+            const isMine = msg.senderId?._id === user._id;
 
             return (
               <div
-                key={index}
-                className={`flex ${
-                  isMine ? "justify-end" : "justify-start"
-                }`}
+                key={msg._id}
+                className={`flex ${isMine ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`px-4 py-2 rounded-lg max-w-xs text-sm ${
@@ -106,6 +132,11 @@ const Chat = () => {
               </div>
             );
           })}
+
+          {typingUsers.length > 0 && (
+            <p className="text-xs text-gray-500">Someone is typing...</p>
+          )}
+
           <div ref={bottomRef} />
         </div>
 
@@ -113,7 +144,7 @@ const Chat = () => {
         <div className="border-t p-3 flex gap-2">
           <input
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTyping}
             placeholder="Type a message..."
             className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
