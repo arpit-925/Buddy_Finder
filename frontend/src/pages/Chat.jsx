@@ -11,7 +11,9 @@ let typingTimeout;
 const Chat = () => {
   const { tripId } = useParams();
   const { user } = useContext(AuthContext);
-  const socket = useSocket();
+
+  // ✅ FIXED HERE
+  const { socket } = useSocket();
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -72,7 +74,7 @@ const Chat = () => {
 
   /* Send message */
   const sendMessage = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || !socket) return;
 
     try {
       const res = await api.post("/messages/send", {
@@ -91,6 +93,8 @@ const Chat = () => {
   /* Typing handler */
   const handleTyping = (e) => {
     setText(e.target.value);
+    if (!socket) return;
+
     socket.emit("typing", { tripId });
 
     if (typingTimeout) clearTimeout(typingTimeout);
