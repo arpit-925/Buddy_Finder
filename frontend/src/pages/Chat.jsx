@@ -11,14 +11,13 @@ let typingTimeout;
 const Chat = () => {
   const { tripId } = useParams();
   const { user } = useContext(AuthContext);
-
-  // ✅ FIXED HERE
   const { socket } = useSocket();
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState([]);
+  const [hostId, setHostId] = useState(null);
 
   const bottomRef = useRef(null);
 
@@ -27,7 +26,7 @@ const Chat = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  /* Fetch old messages */
+  /* Fetch messages */
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -39,8 +38,20 @@ const Chat = () => {
         setLoading(false);
       }
     };
-
     fetchMessages();
+  }, [tripId]);
+
+  /* Fetch host */
+  useEffect(() => {
+    const fetchHost = async () => {
+      try {
+        const res = await api.get(`/trips/${tripId}`);
+        setHostId(res.data.createdBy?._id);
+      } catch {
+        console.error("Failed to fetch host");
+      }
+    };
+    fetchHost();
   }, [tripId]);
 
   /* Socket setup */
@@ -118,6 +129,7 @@ const Chat = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((msg) => {
             const isMine = msg.senderId?._id === user._id;
+            const isHost = msg.senderId?._id === hostId;
 
             return (
               <div
@@ -131,7 +143,15 @@ const Chat = () => {
                       : "bg-gray-200 text-gray-800 rounded-bl-none"
                   }`}
                 >
-                  {msg.message}
+                  {/* Name + Host badge */}
+                  <div className="text-xs font-semibold mb-1 flex items-center gap-1">
+                    {isMine ? "You" : msg.senderId?.name}
+                    {isHost && (
+                      <span className="text-yellow-500 text-xs">👑 Host</span>
+                    )}
+                  </div>
+
+                  <div>{msg.message}</div>
                 </div>
               </div>
             );
