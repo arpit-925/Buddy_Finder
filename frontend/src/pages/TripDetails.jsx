@@ -189,6 +189,49 @@ const TripDetails = () => {
               {trip.createdBy?.email}
             </p>
           </div>
+{/* PARTICIPANTS (HOST + JOINED USERS) */}
+{isParticipant && (
+  <div className="bg-white rounded-xl shadow p-4">
+    <h3 className="font-semibold mb-3">Participants</h3>
+
+    {/* HOST */}
+    <div className="mb-3">
+      <p className="text-xs text-gray-500">Host</p>
+      <p className="font-medium">
+        {trip.createdBy?.name}
+      </p>
+    </div>
+
+    {/* JOINED USERS */}
+    <div>
+      <p className="text-xs text-gray-500 mb-1">
+        Joined Users
+      </p>
+
+      {trip.joinedUsers?.length <= 1 ? (
+        <p className="text-sm text-gray-400">
+          No joined users yet
+        </p>
+      ) : (
+        <ul className="space-y-1">
+          {trip.joinedUsers
+            .filter(
+              (u) =>
+                u?._id !== trip.createdBy?._id
+            )
+            .map((u) => (
+              <li
+                key={u._id}
+                className="text-sm font-medium"
+              >
+                {u.name}
+              </li>
+            ))}
+        </ul>
+      )}
+    </div>
+  </div>
+)}
 
           {/* ACTIONS */}
           <div className="bg-white rounded-xl shadow p-4 space-y-3">
