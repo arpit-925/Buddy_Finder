@@ -1,15 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
-import { Toaster } from "react-hot-toast"; // ✅ ADD THIS
+import { Toaster } from "react-hot-toast";
 
-// Auth Pages
+// ================= AUTH PAGES =================
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import VerifyEmail from "./pages/Auth/VerifyEmail";
 import NotFound from "./pages/NotFound";
 
-// Protected Pages
+// ================= PROTECTED PAGES =================
 import Dashboard from "./pages/Dashboard";
 import ExploreTrips from "./pages/ExploreTrips";
 import CreateTrip from "./pages/CreateTrip";
@@ -18,12 +18,13 @@ import Profile from "./pages/Profile";
 import TripDetails from "./pages/TripDetails";
 import EditTrip from "./pages/EditTrip";
 import EditProfile from "./pages/EditProfile";
+import About from "./pages/About"; // ✅ ADD THIS
 
-// Components & Layouts
+// ================= LAYOUTS & GUARDS =================
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import ProtectedLayout from "./layouts/ProtectedLayout";
 
-// Styles
+// ================= STYLES =================
 import "mapbox-gl/dist/mapbox-gl.css";
 
 function App() {
@@ -40,7 +41,7 @@ function App() {
 
   return (
     <>
-      {/* ✅ TOASTER MUST BE HERE */}
+      {/* ✅ TOASTER */}
       <Toaster
         position="top-right"
         toastOptions={{
@@ -58,8 +59,6 @@ function App() {
           path="/register"
           element={!user ? <Register /> : <Navigate to="/" replace />}
         />
-
-        {/* Email verification */}
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
         {/* ================= PROTECTED ROUTES ================= */}
@@ -73,6 +72,9 @@ function App() {
             <Route path="/chat/:tripId" element={<Chat />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+
+            {/* ✅ ABOUT ROUTE (FIX FOR 404) */}
+            <Route path="/about" element={<About />} />
           </Route>
         </Route>
 
