@@ -9,16 +9,18 @@ import Register from "./pages/Auth/Register";
 import VerifyEmail from "./pages/Auth/VerifyEmail";
 import NotFound from "./pages/NotFound";
 
-// ================= PROTECTED PAGES =================
+// ================= PUBLIC PAGES =================
 import Dashboard from "./pages/Dashboard";
 import ExploreTrips from "./pages/ExploreTrips";
+import About from "./pages/About";
+
+// ================= PROTECTED PAGES =================
 import CreateTrip from "./pages/CreateTrip";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import TripDetails from "./pages/TripDetails";
 import EditTrip from "./pages/EditTrip";
 import EditProfile from "./pages/EditProfile";
-import About from "./pages/About"; // ✅ ADD THIS
 
 // ================= LAYOUTS & GUARDS =================
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -30,7 +32,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 function App() {
   const { user, loading } = useContext(AuthContext);
 
-  // Prevent flicker while checking auth
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -41,16 +42,15 @@ function App() {
 
   return (
     <>
-      {/* ✅ TOASTER */}
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-        }}
-      />
+      {/* TOASTER */}
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
 
       <Routes>
         {/* ================= PUBLIC ROUTES ================= */}
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/explore" element={<ExploreTrips />} />
+        <Route path="/about" element={<About />} />
+
         <Route
           path="/login"
           element={!user ? <Login /> : <Navigate to="/" replace />}
@@ -64,17 +64,12 @@ function App() {
         {/* ================= PROTECTED ROUTES ================= */}
         <Route element={<ProtectedRoute />}>
           <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/explore" element={<ExploreTrips />} />
             <Route path="/create-trip" element={<CreateTrip />} />
             <Route path="/trip/:id" element={<TripDetails />} />
             <Route path="/edit-trip/:id" element={<EditTrip />} />
             <Route path="/chat/:tripId" element={<Chat />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/edit-profile" element={<EditProfile />} />
-
-            {/* ✅ ABOUT ROUTE (FIX FOR 404) */}
-            <Route path="/about" element={<About />} />
           </Route>
         </Route>
 
