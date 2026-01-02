@@ -2,14 +2,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
-import logo from "../../../public/logo.jpeg";
+import logo from "../../assets/logo.jpeg";
+
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const { notifications, markAllRead } = useNotifications();
 
-  const [open, setOpen] = useState(false);        // notifications
+  const [open, setOpen] = useState(false);         // notifications dropdown
   const [menuOpen, setMenuOpen] = useState(false); // mobile menu
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -39,16 +40,21 @@ const Navbar = () => {
 
         {/* DESKTOP MENU */}
         <div className="hidden md:flex items-center gap-6 relative">
-          <Link to="/explore" className="text-sm">Explore Trips</Link>
+
+          <Link to="/explore" className="text-sm hover:text-sky-400">
+            Explore Trips
+          </Link>
 
           <Link
             to="/create-trip"
-            className="bg-blue-500 px-4 py-1.5 rounded-full text-sm"
+            className="bg-blue-500 px-4 py-1.5 rounded-full text-sm hover:bg-blue-600"
           >
             + Create Trip
           </Link>
 
-          <Link to="/profile" className="text-sm">Profile</Link>
+          <Link to="/profile" className="text-sm hover:text-sky-400">
+            Profile
+          </Link>
 
           {/* 🔔 Notifications */}
           <div className="relative">
@@ -70,7 +76,9 @@ const Navbar = () => {
             {open && (
               <div className="absolute right-0 mt-2 w-64 bg-white text-black shadow rounded-lg z-50">
                 {notifications.length === 0 ? (
-                  <p className="text-sm text-gray-500 p-3">No notifications</p>
+                  <p className="text-sm text-gray-500 p-3">
+                    No notifications
+                  </p>
                 ) : (
                   notifications.map((n, index) => (
                     <div
@@ -85,12 +93,18 @@ const Navbar = () => {
             )}
           </div>
 
+          {/* LOGOUT */}
           <button
             onClick={handleLogout}
-            className="text-sm text-red-400"
+            className="text-sm text-red-400 hover:text-red-500"
           >
             Logout
           </button>
+
+          {/* ABOUT (AFTER LOGOUT) */}
+          <Link to="/about" className="text-sm hover:text-sky-400">
+            About
+          </Link>
         </div>
 
         {/* MOBILE MENU BUTTON */}
@@ -105,16 +119,30 @@ const Navbar = () => {
       {/* MOBILE MENU */}
       {menuOpen && (
         <div className="md:hidden bg-slate-800 px-4 pb-4 space-y-3">
-          <Link to="/explore" className="block text-sm">Explore Trips</Link>
+
+          <Link
+            to="/explore"
+            className="block text-sm"
+            onClick={() => setMenuOpen(false)}
+          >
+            Explore Trips
+          </Link>
 
           <Link
             to="/create-trip"
             className="block bg-blue-500 px-4 py-2 rounded-full text-sm text-center"
+            onClick={() => setMenuOpen(false)}
           >
             + Create Trip
           </Link>
 
-          <Link to="/profile" className="block text-sm">Profile</Link>
+          <Link
+            to="/profile"
+            className="block text-sm"
+            onClick={() => setMenuOpen(false)}
+          >
+            Profile
+          </Link>
 
           <button
             onClick={handleLogout}
@@ -122,6 +150,15 @@ const Navbar = () => {
           >
             Logout
           </button>
+
+          {/* ABOUT (AFTER LOGOUT) */}
+          <Link
+            to="/about"
+            className="block text-sm"
+            onClick={() => setMenuOpen(false)}
+          >
+            About
+          </Link>
         </div>
       )}
     </nav>
