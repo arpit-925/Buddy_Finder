@@ -12,7 +12,7 @@ const Dashboard = () => {
 
   return (
     <div className="relative w-full min-h-[calc(100vh-64px)] overflow-hidden">
-      
+
       {/* BACKGROUND IMAGE */}
       <div
         className="absolute inset-0 bg-cover bg-center"
@@ -21,15 +21,16 @@ const Dashboard = () => {
             "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')",
         }}
       >
-        {/* SOFT OVERLAY (theme-friendly) */}
-        <div className="absolute inset-0 bg-slate-900/30" />
+        {/* LIGHTER OVERLAY */}
+        <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[1px]" />
       </div>
 
       {/* CONTENT */}
-      <div className="relative z-10 flex flex-col justify-center items-center h-full px-6">
-        <div className="bg-white/90 backdrop-blur-md border border-white/40 rounded-3xl p-8 md:p-12 text-center max-w-2xl w-full shadow-xl">
+      <div className="relative z-10 flex flex-col justify-end items-center h-full px-6 pb-20 md:pb-28">
+
+        {/* GLASS BOX */}
+        <div className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-8 md:p-12 text-center max-w-2xl w-full shadow-2xl">
           
-          {/* HEADING */}
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4">
             Adventure Awaits
           </h1>
@@ -40,8 +41,6 @@ const Dashboard = () => {
 
           {/* CTA BUTTONS */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            
-            {/* PRIMARY CTA */}
             <button
               onClick={() => navigate("/explore")}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-10 py-4 rounded-full text-lg transition"
@@ -49,7 +48,6 @@ const Dashboard = () => {
               Explore Trips
             </button>
 
-            {/* GUEST CTA */}
             {!user && (
               <button
                 onClick={() => navigate("/login")}
@@ -59,7 +57,6 @@ const Dashboard = () => {
               </button>
             )}
 
-            {/* LOGGED-IN CTA */}
             {user && (
               <button
                 onClick={() => navigate("/profile")}
@@ -72,7 +69,7 @@ const Dashboard = () => {
         </div>
 
         {/* FOOTNOTE */}
-        <p className="mt-8 text-white/70 text-sm">
+        <p className="mt-6 text-white/70 text-sm">
           Join 2,000+ travelers worldwide
         </p>
       </div>
