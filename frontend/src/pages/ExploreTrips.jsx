@@ -37,7 +37,7 @@ const ExploreTrips = () => {
     if (!trips.length) fetchAllTrips();
   }, [fetchAllTrips, trips.length]);
 
-  /* ================= FILTER + RANK TRIPS ================= */
+  /* ================= FILTER + RANK ================= */
   const filteredTrips = useMemo(() => {
     return trips
       .filter((trip) => {
@@ -47,9 +47,8 @@ const ExploreTrips = () => {
         if (
           search &&
           !trip.destination?.toLowerCase().includes(search.toLowerCase())
-        ) {
+        )
           return false;
-        }
 
         if (trip.budget > budgetRange) return false;
         if (onlyAvailable && isFull) return false;
@@ -59,7 +58,6 @@ const ExploreTrips = () => {
         return true;
       })
       .sort((a, b) => {
-        // Prefer trips matching travel type
         const aScore =
           preferredTravelType &&
           a.destination?.toLowerCase().includes(preferredTravelType)
@@ -81,7 +79,7 @@ const ExploreTrips = () => {
     preferredTravelType,
   ]);
 
-  /* ================= SUGGESTED PLACES ================= */
+  /* ================= SUGGESTED ================= */
   const suggested = suggestedPlaces.filter((p) => {
     if (preferredSeason && !p.season.includes(preferredSeason)) return false;
     if (preferredTravelType && p.type !== preferredTravelType) return false;
@@ -91,28 +89,30 @@ const ExploreTrips = () => {
   if (loading) return <Loader fullScreen />;
 
   return (
-    <div className="min-h-screen bg-slate-100 p-6">
-      <h1 className="text-3xl font-bold text-center mb-6">
+    <div className="bg-slate-50 px-4 py-8">
+      <h1 className="text-3xl font-bold text-center text-slate-800 mb-8">
         Explore Trips 🌍
       </h1>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-        {/* ================= LEFT FILTER SIDEBAR ================= */}
-        <div className="bg-white rounded-xl shadow p-4 space-y-5 h-fit">
-          <h3 className="font-semibold text-lg">Filters</h3>
+        {/* ================= FILTER SIDEBAR ================= */}
+        <div className="bg-white rounded-xl shadow p-4 space-y-5 h-fit sticky top-24">
+          <h3 className="font-semibold text-lg text-slate-800">
+            Filters
+          </h3>
 
           <input
             type="text"
             placeholder="Search destination..."
-            className="input w-full"
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          {/* SMART BUDGET SLIDER */}
+          {/* BUDGET */}
           <div>
-            <label className="text-sm font-medium text-gray-600">
+            <label className="text-sm font-medium text-slate-600">
               Max Budget: ₹{budgetRange.toLocaleString()}
             </label>
 
@@ -126,14 +126,14 @@ const ExploreTrips = () => {
               className="w-full accent-blue-600 mt-2"
             />
 
-            <div className="flex justify-between text-xs text-gray-400">
+            <div className="flex justify-between text-xs text-slate-400">
               <span>₹1k</span>
               <span>₹2L</span>
             </div>
           </div>
 
           <select
-            className="input w-full"
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
@@ -142,7 +142,7 @@ const ExploreTrips = () => {
             <option value="FULL">Full</option>
           </select>
 
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm text-slate-600">
             <input
               type="checkbox"
               checked={onlyAvailable}
@@ -151,7 +151,6 @@ const ExploreTrips = () => {
             Only available
           </label>
 
-          {/* USER PREF INFO */}
           {(preferredTravelType || userPrefs.budget) && (
             <p className="text-xs text-blue-600">
               🎯 Personalized for you
@@ -159,17 +158,19 @@ const ExploreTrips = () => {
           )}
         </div>
 
-        {/* ================= MAIN CONTENT ================= */}
-        <div className="lg:col-span-3 space-y-10">
+        {/* ================= MAIN ================= */}
+        <div className="lg:col-span-3 space-y-12">
 
-          {/* ================= TRIPS ================= */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4">
-              Recommended Trips for You
+          {/* TRIPS */}
+          <section>
+            <h2 className="text-xl font-semibold text-slate-800 mb-4">
+              Recommended Trips
             </h2>
 
             {filteredTrips.length === 0 ? (
-              <p className="text-gray-500">No trips found 😕</p>
+              <p className="text-slate-500">
+                No trips found 😕 Try adjusting filters.
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTrips.map((trip) => {
@@ -181,29 +182,27 @@ const ExploreTrips = () => {
                       key={trip._id}
                       className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden"
                     >
-                      {/* <img
-                        src={trip.image}
+                      <img
+                        src={
+                          trip.image ||
+                          "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1000&auto=format&fit=crop"
+                        }
                         alt={trip.destination}
                         className="h-48 w-full object-cover"
-                      /> */}
-                      <img
-  src={trip.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1000&auto=format&fit=crop"}
-  alt={trip.destination}
-  onError={(e) => {
-    e.target.src = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1000&auto=format&fit=crop";
-  }}
-  className="h-48 w-full object-cover"
-/>
+                      />
+
                       <div className="p-4">
-                        <h3 className="font-semibold">
+                        <h3 className="font-semibold text-slate-800">
                           {trip.destination}
                         </h3>
-                        <p className="text-sm text-gray-500">
+
+                        <p className="text-sm text-slate-500">
                           ₹{trip.budget} • {joinedCount}/{trip.maxPeople}
                         </p>
+
                         <Link
                           to={`/trip/${trip._id}`}
-                          className="block mt-2 text-center bg-blue-600 text-white py-2 rounded"
+                          className="block mt-3 text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold transition"
                         >
                           View Trip
                         </Link>
@@ -213,11 +212,11 @@ const ExploreTrips = () => {
                 })}
               </div>
             )}
-          </div>
+          </section>
 
-          {/* ================= SUGGESTED PLACES ================= */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4">
+          {/* SUGGESTED */}
+          <section>
+            <h2 className="text-xl font-semibold text-slate-800 mb-4">
               Suggested Places ({preferredSeason})
             </h2>
 
@@ -227,17 +226,19 @@ const ExploreTrips = () => {
                   key={place.name}
                   className="bg-white rounded-xl shadow cursor-pointer hover:shadow-lg transition"
                   onClick={() =>
-                    navigate("/create-trip", {
-                      state: {
-                        destination: place.name,
-                        image: place.image,
-                        location: {
-                          lat: place.lat,
-                          lng: place.lng,
-                          address: place.name,
-                        },
-                      },
-                    })
+                    user
+                      ? navigate("/create-trip", {
+                          state: {
+                            destination: place.name,
+                            image: place.image,
+                            location: {
+                              lat: place.lat,
+                              lng: place.lng,
+                              address: place.name,
+                            },
+                          },
+                        })
+                      : navigate("/login")
                   }
                 >
                   <img
@@ -245,13 +246,13 @@ const ExploreTrips = () => {
                     alt={place.name}
                     className="h-40 w-full object-cover"
                   />
-                  <div className="p-3 text-center font-medium">
+                  <div className="p-3 text-center font-medium text-slate-800">
                     {place.name}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
         </div>
       </div>

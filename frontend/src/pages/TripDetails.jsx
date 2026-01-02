@@ -17,7 +17,7 @@ const TripDetails = () => {
   const [joining, setJoining] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  /* ================= FETCH TRIP ================= */
+  /* ================= FETCH ================= */
   const fetchTrip = async () => {
     try {
       const res = await api.get(`/trips/${id}`);
@@ -54,10 +54,7 @@ const TripDetails = () => {
       return;
     }
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this trip?"
-    );
-    if (!confirmDelete) return;
+    if (!window.confirm("Are you sure you want to delete this trip?")) return;
 
     try {
       setDeleting(true);
@@ -71,54 +68,50 @@ const TripDetails = () => {
     }
   };
 
-  /* ================= STATES ================= */
   if (loading) return <Loader fullScreen />;
 
   if (!trip) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Trip not found</p>
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
+        <p className="text-slate-500">Trip not found</p>
       </div>
     );
   }
 
   const userId = user?._id?.toString();
+  const isCreator = trip.createdBy?._id?.toString() === userId;
+  const isJoined = trip.joinedUsers?.some(
+    (u) => u === userId || u?._id === userId
+  );
+  const isRequested = trip.joinRequests?.some(
+    (u) => u === userId || u?._id === userId
+  );
 
-  const isCreator =
-    trip.createdBy?._id?.toString() === userId;
-
-  const isJoined =
-    trip.joinedUsers?.some(
-      (u) => u === userId || u?._id === userId
-    );
-
-  const isRequested =
-    trip.joinRequests?.some(
-      (u) => u === userId || u?._id === userId
-    );
-
-  // ✅ IMPORTANT FIX
   const isParticipant = isCreator || isJoined;
-
   const spotsLeft = trip.maxPeople - trip.joinedUsers.length;
   const isClosed = trip.status === "CLOSED";
 
   return (
-    <div className="bg-slate-100 min-h-screen p-6">
+    <div className="bg-slate-50 px-4 py-8 min-h-[calc(100vh-64px)]">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* ================= LEFT ================= */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl shadow overflow-hidden">
+
+          {/* HERO CARD */}
+          <div className="bg-white rounded-2xl shadow overflow-hidden">
             <img
-              src={trip.image || "https://source.unsplash.com/1200x600/?travel"}
+              src={
+                trip.image ||
+                "https://images.unsplash.com/photo-1488646953014-85cb44e25828"
+              }
               alt={trip.destination}
               className="w-full h-72 object-cover"
             />
 
             <div className="p-6">
               <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl font-bold text-slate-800">
                   {trip.destination}
                 </h1>
 
@@ -133,12 +126,12 @@ const TripDetails = () => {
                 </span>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-slate-500 mt-1">
                 {new Date(trip.startDate).toLocaleDateString()} →{" "}
                 {new Date(trip.endDate).toLocaleDateString()}
               </p>
 
-              <p className="mt-4 text-gray-700">
+              <p className="mt-4 text-slate-700">
                 {trip.description}
               </p>
 
@@ -154,10 +147,9 @@ const TripDetails = () => {
           </div>
 
           {/* MAP */}
-          {trip.location &&
-            trip.location.lat != null &&
-            trip.location.lng != null && (
-              <div className="bg-white rounded-xl shadow p-4">
+          {trip.location?.lat != null &&
+            trip.location?.lng != null && (
+              <div className="bg-white rounded-2xl shadow p-4">
                 <h3 className="font-semibold mb-2">
                   Trip Location
                 </h3>
@@ -168,7 +160,7 @@ const TripDetails = () => {
                 />
 
                 {trip.location.address && (
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-sm text-slate-500 mt-2">
                     📍 {trip.location.address}
                   </p>
                 )}
@@ -177,73 +169,69 @@ const TripDetails = () => {
         </div>
 
         {/* ================= RIGHT ================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 sticky top-24 h-fit">
 
           {/* HOST */}
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white rounded-2xl shadow p-4">
             <h3 className="font-semibold mb-2">Trip Host</h3>
-            <p className="font-medium">
+            <p className="font-medium text-slate-800">
               {trip.createdBy?.name}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-500">
               {trip.createdBy?.email}
             </p>
           </div>
-{/* PARTICIPANTS (HOST + JOINED USERS) */}
-{isParticipant && (
-  <div className="bg-white rounded-xl shadow p-4">
-    <h3 className="font-semibold mb-3">Participants</h3>
 
-    {/* HOST */}
-    <div className="mb-3">
-      <p className="text-xs text-gray-500">Host</p>
-      <p className="font-medium">
-        {trip.createdBy?.name}
-      </p>
-    </div>
+          {/* PARTICIPANTS */}
+          {isParticipant && (
+            <div className="bg-white rounded-2xl shadow p-4">
+              <h3 className="font-semibold mb-3">
+                Participants
+              </h3>
 
-    {/* JOINED USERS */}
-    <div>
-      <p className="text-xs text-gray-500 mb-1">
-        Joined Users
-      </p>
+              <p className="text-xs text-slate-500">Host</p>
+              <p className="font-medium mb-3">
+                {trip.createdBy?.name}
+              </p>
 
-      {trip.joinedUsers?.length <= 1 ? (
-        <p className="text-sm text-gray-400">
-          No joined users yet
-        </p>
-      ) : (
-        <ul className="space-y-1">
-          {trip.joinedUsers
-            .filter(
-              (u) =>
-                u?._id !== trip.createdBy?._id
-            )
-            .map((u) => (
-              <li
-                key={u._id}
-                className="text-sm font-medium"
-              >
-                {u.name}
-              </li>
-            ))}
-        </ul>
-      )}
-    </div>
-  </div>
-)}
+              <p className="text-xs text-slate-500 mb-1">
+                Joined Users
+              </p>
+
+              {trip.joinedUsers.length <= 1 ? (
+                <p className="text-sm text-slate-400">
+                  No joined users yet
+                </p>
+              ) : (
+                <ul className="space-y-1">
+                  {trip.joinedUsers
+                    .filter(
+                      (u) =>
+                        u?._id !== trip.createdBy?._id
+                    )
+                    .map((u) => (
+                      <li
+                        key={u._id}
+                        className="text-sm font-medium text-slate-700"
+                      >
+                        {u.name}
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           {/* ACTIONS */}
-          <div className="bg-white rounded-xl shadow p-4 space-y-3">
+          <div className="bg-white rounded-2xl shadow p-4 space-y-3">
 
-            {/* HOST ACTIONS */}
             {isCreator && (
               <>
                 <button
                   onClick={() =>
                     navigate(`/edit-trip/${trip._id}`)
                   }
-                  className="w-full bg-yellow-500 text-white py-2 rounded"
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-semibold"
                 >
                   ✏️ Edit Trip
                 </button>
@@ -251,7 +239,7 @@ const TripDetails = () => {
                 <button
                   onClick={handleDeleteTrip}
                   disabled={deleting}
-                  className="w-full bg-red-600 text-white py-2 rounded disabled:opacity-60"
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
                 >
                   {deleting
                     ? "Deleting..."
@@ -260,26 +248,22 @@ const TripDetails = () => {
               </>
             )}
 
-            {/* CHAT FOR HOST + JOINED USERS */}
             {isParticipant && (
               <button
                 onClick={() =>
                   navigate(`/chat/${trip._id}`)
                 }
-                className="w-full bg-green-600 text-white py-2 rounded"
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold"
               >
                 Open Chat 💬
               </button>
             )}
 
-            {/* JOIN LOGIC */}
             {!isParticipant && !isRequested && (
               <button
                 onClick={handleJoinTrip}
-                disabled={
-                  joining || spotsLeft === 0 || isClosed
-                }
-                className="w-full bg-blue-600 text-white py-2 rounded disabled:opacity-60"
+                disabled={joining || spotsLeft === 0 || isClosed}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
               >
                 {joining ? "Sending..." : "Join Trip"}
               </button>
@@ -288,7 +272,7 @@ const TripDetails = () => {
             {isRequested && (
               <button
                 disabled
-                className="w-full bg-gray-300 py-2 rounded"
+                className="w-full bg-slate-200 py-2 rounded-lg text-slate-600 font-semibold"
               >
                 Request Sent
               </button>
@@ -297,7 +281,7 @@ const TripDetails = () => {
 
           {/* JOIN REQUESTS */}
           {isCreator && (
-            <div className="bg-white rounded-xl shadow p-4">
+            <div className="bg-white rounded-2xl shadow p-4">
               <h3 className="font-semibold mb-3">
                 Join Requests
               </h3>

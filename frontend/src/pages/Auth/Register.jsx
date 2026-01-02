@@ -21,8 +21,12 @@ const Register = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,70 +36,82 @@ const Register = () => {
       setLoading(true);
       await registerUser(formData);
 
-      // ✅ Success message
-      toast.success("Account created! Please verify your email to continue.");
+      toast.success(
+        "Account created! Please verify your email to continue."
+      );
 
       // ✅ Redirect to verification notice page
       navigate("/verify-email-notice");
-
     } catch (err) {
-      toast.error(err.response?.data?.message || "Signup failed");
+      toast.error(
+        err.response?.data?.message || "Signup failed. Try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-300">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6">
-        <h2 className="text-2xl font-bold text-center mb-2">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6">
+        
+        {/* HEADER */}
+        <h2 className="text-2xl font-bold text-center text-slate-800 mb-2">
           Create Account
         </h2>
-        <p className="text-gray-500 text-center mb-6">
+        <p className="text-slate-500 text-center mb-6">
           Start your journey with Buddy Finder
         </p>
 
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             name="name"
             placeholder="Full Name"
-            className="input"
+            value={formData.name}
             onChange={handleChange}
             required
+            className="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
             type="email"
             name="email"
             placeholder="Email address"
-            className="input"
+            value={formData.email}
             onChange={handleChange}
             required
+            className="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
             type="password"
             name="password"
-            placeholder="Password (min 6 chars)"
-            className="input"
-            autoComplete="new-password"
+            placeholder="Password (min 6 characters)"
+            value={formData.password}
             onChange={handleChange}
+            autoComplete="new-password"
             required
+            className="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="btn disabled:opacity-60"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60"
           >
             {loading ? "Creating account..." : "Sign Up"}
           </button>
         </form>
 
-        <p className="text-sm text-center mt-4">
+        {/* FOOTER */}
+        <p className="text-sm text-center text-slate-600 mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 font-semibold">
+          <Link
+            to="/login"
+            className="text-blue-600 font-semibold hover:underline"
+          >
             Login
           </Link>
         </p>

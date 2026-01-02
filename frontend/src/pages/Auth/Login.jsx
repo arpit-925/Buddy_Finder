@@ -12,9 +12,9 @@ const Login = () => {
   // 🔁 Redirect back to intended page (or dashboard)
   const from = location.state?.from?.pathname || "/";
 
-  // ✅ Already logged in → go back safely (NO replace)
+  // ✅ Already logged in → redirect safely
   if (user) {
-    return <Navigate to={from} />;
+    return <Navigate to={from} replace />;
   }
 
   const [formData, setFormData] = useState({
@@ -25,11 +25,17 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showResend, setShowResend] = useState(false);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+
     setShowResend(false);
 
     try {
@@ -44,10 +50,12 @@ const Login = () => {
       navigate(from, { replace: true });
     } catch (err) {
       const status = err.response?.status;
-      const message = err.response?.data?.message || "Login failed";
+      const message =
+        err.response?.data?.message || "Login failed. Try again.";
 
       toast.error(message);
 
+      // 🔒 Email not verified
       if (status === 403) {
         setShowResend(true);
       }
@@ -70,38 +78,43 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6">
-        <h2 className="text-2xl font-bold text-center mb-2">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6">
+
+        {/* HEADER */}
+        <h2 className="text-2xl font-bold text-center text-slate-800 mb-2">
           Welcome Back
         </h2>
-        <p className="text-gray-500 text-center mb-6">
+        <p className="text-slate-500 text-center mb-6">
           Login to find your travel buddy
         </p>
 
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             name="email"
             placeholder="Email address"
-            className="input"
+            value={formData.email}
             onChange={handleChange}
             required
+            className="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
             type="password"
             name="password"
             placeholder="Password"
-            className="input"
+            value={formData.password}
             onChange={handleChange}
             required
+            className="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="btn disabled:opacity-60"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -117,9 +130,13 @@ const Login = () => {
           </button>
         )}
 
-        <p className="text-sm text-center mt-4">
+        {/* FOOTER */}
+        <p className="text-sm text-center text-slate-600 mt-4">
           Don’t have an account?{" "}
-          <Link to="/register" className="text-blue-600 font-semibold">
+          <Link
+            to="/register"
+            className="text-blue-600 font-semibold hover:underline"
+          >
             Sign up
           </Link>
         </p>
