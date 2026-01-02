@@ -25,6 +25,7 @@ import EditProfile from "./pages/EditProfile";
 // ================= LAYOUTS & GUARDS =================
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import ProtectedLayout from "./layouts/ProtectedLayout";
+import MainLayout from "./layouts/MainLayout";
 
 // ================= STYLES =================
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -42,35 +43,39 @@ function App() {
 
   return (
     <>
-      {/* TOASTER */}
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
 
       <Routes>
-        {/* ================= PUBLIC ROUTES ================= */}
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/explore" element={<ExploreTrips />} />
-        <Route path="/about" element={<About />} />
+        {/* ================= GLOBAL LAYOUT ================= */}
+        <Route element={<MainLayout />}>
 
-        <Route
-          path="/login"
-          element={!user ? <Login /> : <Navigate to="/" replace />}
-        />
-        <Route
-          path="/register"
-          element={!user ? <Register /> : <Navigate to="/" replace />}
-        />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          {/* ========== PUBLIC ROUTES ========== */}
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/explore" element={<ExploreTrips />} />
+          <Route path="/about" element={<About />} />
 
-        {/* ================= PROTECTED ROUTES ================= */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<ProtectedLayout />}>
-            <Route path="/create-trip" element={<CreateTrip />} />
-            <Route path="/trip/:id" element={<TripDetails />} />
-            <Route path="/edit-trip/:id" element={<EditTrip />} />
-            <Route path="/chat/:tripId" element={<Chat />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
+          <Route
+            path="/login"
+            element={!user ? <Login /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/register"
+            element={!user ? <Register /> : <Navigate to="/" replace />}
+          />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+
+          {/* ========== PROTECTED ROUTES ========== */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<ProtectedLayout />}>
+              <Route path="/create-trip" element={<CreateTrip />} />
+              <Route path="/trip/:id" element={<TripDetails />} />
+              <Route path="/edit-trip/:id" element={<EditTrip />} />
+              <Route path="/chat/:tripId" element={<Chat />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
+            </Route>
           </Route>
+
         </Route>
 
         {/* ================= 404 ================= */}
