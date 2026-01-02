@@ -21,6 +21,7 @@ import Profile from "./pages/Profile";
 import TripDetails from "./pages/TripDetails";
 import EditTrip from "./pages/EditTrip";
 import EditProfile from "./pages/EditProfile";
+import VerifyEmailNotice from "./pages/Auth/VerifyEmailNotice";
 
 // ================= LAYOUTS & GUARDS =================
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -63,6 +64,8 @@ function App() {
             element={!user ? <Register /> : <Navigate to="/" replace />}
           />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/verify-email-notice" element={<VerifyEmailNotice />} />
+
 
           {/* ========== PROTECTED ROUTES ========== */}
           <Route element={<ProtectedRoute />}>

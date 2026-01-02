@@ -25,23 +25,25 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if(loading) return;
-  try {
-    setLoading(true);
-    await registerUser(formData);
-    
-    // Flash the message
-    toast.success("Account created! Please verify your email to continue.");
-    
-    // Move to login page while they wait for the email
-    navigate("/login"); 
-  } catch (err) {
-    toast.error(err.response?.data?.message || "Signup failed");
-  } finally {
-    setLoading(false);
-  }
-};
+    e.preventDefault();
+    if (loading) return;
+
+    try {
+      setLoading(true);
+      await registerUser(formData);
+
+      // ✅ Success message
+      toast.success("Account created! Please verify your email to continue.");
+
+      // ✅ Redirect to verification notice page
+      navigate("/verify-email-notice");
+
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-300">
