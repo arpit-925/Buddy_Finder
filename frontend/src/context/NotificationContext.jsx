@@ -4,16 +4,14 @@ import { useSocket } from "./SocketContext";
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-  
-  const socketContext = useSocket();
-  const socket = socketContext?.socket; // ✅ SAFE
-  
+  const { socket } = useSocket(); // ✅ correct
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    if (!socket) return; // ✅ CRITICAL GUARD
+    if (!socket) return;
 
     const handleNotification = (data) => {
+      console.log("🔔 Notification received:", data); // DEBUG
       setNotifications((prev) => [
         { ...data, read: false, id: Date.now() },
         ...prev,
@@ -25,7 +23,7 @@ export const NotificationProvider = ({ children }) => {
     return () => {
       socket.off("notification", handleNotification);
     };
-  }, [socket]);
+  }, [socket]); // 🔥 CRITICAL dependency
 
   const markAllRead = () => {
     setNotifications((prev) =>
@@ -42,5 +40,4 @@ export const NotificationProvider = ({ children }) => {
   );
 };
 
-export const useNotifications = () =>
-  useContext(NotificationContext);
+export const useNotifications = () => useContext(NotificationContext);
