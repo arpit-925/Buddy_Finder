@@ -14,12 +14,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <AuthProvider>
         <SocketProvider>
-          <NotificationProvider>
-            <TripProvider>
+          <TripProvider>
+              <NotificationProvider>
               <App />
+              </NotificationProvider>
             </TripProvider>
-          </NotificationProvider>
-        </SocketProvider>
+                   </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
