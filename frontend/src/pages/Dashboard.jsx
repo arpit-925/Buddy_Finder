@@ -21,15 +21,15 @@ const Dashboard = () => {
             "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')",
         }}
       >
-        {/* SOFT TRANSLUCENT OVERLAY */}
+        {/* TRANSLUCENT OVERLAY */}
         <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[1px]" />
       </div>
 
-      {/* CONTENT WRAPPER */}
-      <div className="relative z-10 flex flex-col items-center h-full px-6">
+      {/* FOOTER-PLACED CONTAINER */}
+      <div className="absolute bottom-12 md:bottom-20 left-1/2 -translate-x-1/2 z-10 w-full px-6">
 
-        {/* CARD NEAR FOOTER */}
-        <div className="mt-auto mb-16 md:mb-24 bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-8 md:p-12 text-center max-w-2xl w-full shadow-2xl">
+        {/* GLASS CARD */}
+        <div className="mx-auto bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-8 md:p-12 text-center max-w-2xl w-full shadow-2xl">
           
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4">
             Adventure Awaits
@@ -69,7 +69,7 @@ const Dashboard = () => {
         </div>
 
         {/* FOOTNOTE */}
-        <p className="mb-8 text-white/70 text-sm">
+        <p className="mt-6 text-center text-white/70 text-sm">
           Join 2,000+ travelers worldwide
         </p>
       </div>
