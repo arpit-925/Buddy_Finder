@@ -32,6 +32,9 @@ const ExploreTrips = () => {
   const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [status, setStatus] = useState("ALL");
 
+  /* MOBILE FILTER TOGGLE */
+  const [showFilters, setShowFilters] = useState(false);
+
   /* ================= FETCH ================= */
   useEffect(() => {
     if (!trips.length) fetchAllTrips();
@@ -90,14 +93,30 @@ const ExploreTrips = () => {
 
   return (
     <div className="bg-slate-50 px-4 py-8">
-      <h1 className="text-3xl font-bold text-center text-slate-800 mb-8">
+      <h1 className="text-3xl font-bold text-center text-slate-800 mb-6">
         Explore Trips 🌍
       </h1>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* MOBILE FILTER BUTTON */}
+      <div className="max-w-7xl mx-auto mb-4 lg:hidden">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
+        >
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </button>
+      </div>
+
+      <div className="max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-4 gap-6">
 
         {/* ================= FILTER SIDEBAR ================= */}
-        <div className="bg-white rounded-xl shadow p-4 space-y-5 h-fit sticky top-24">
+        <div
+          className={`
+            bg-white rounded-xl shadow p-4 space-y-5 h-fit
+            ${showFilters ? "block" : "hidden"}
+            lg:block lg:sticky lg:top-24
+          `}
+        >
           <h3 className="font-semibold text-lg text-slate-800">
             Filters
           </h3>
@@ -158,7 +177,7 @@ const ExploreTrips = () => {
           )}
         </div>
 
-        {/* ================= MAIN ================= */}
+        {/* ================= MAIN CONTENT ================= */}
         <div className="lg:col-span-3 space-y-12">
 
           {/* TRIPS */}
@@ -175,7 +194,6 @@ const ExploreTrips = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTrips.map((trip) => {
                   const joinedCount = trip.joinedUsers?.length || 0;
-                  const isFull = joinedCount >= trip.maxPeople;
 
                   return (
                     <div
