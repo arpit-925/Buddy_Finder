@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -7,10 +7,10 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MapBoxView = ({
   lat,
   lng,
+  address,
   markers = [],
   mode = "view",
   onSelect,
-  address,
 }) => {
   const mapRef = useRef(null);
   const map = useRef(null);
@@ -37,7 +37,7 @@ const MapBoxView = ({
   }, []);
 
   /* =========================
-     DESTINATION MARKER
+     DESTINATION MARKER + POPUP
   ========================= */
   useEffect(() => {
     if (!map.current || isNaN(latNum) || isNaN(lngNum)) return;
@@ -46,7 +46,7 @@ const MapBoxView = ({
     markerRef.current?.remove();
     popupRef.current?.remove();
 
-    // custom marker (more visible)
+    // visible marker
     const el = document.createElement("div");
     el.innerHTML = "📍";
     el.style.fontSize = "28px";
@@ -55,18 +55,18 @@ const MapBoxView = ({
       .setLngLat([lngNum, latNum])
       .addTo(map.current);
 
-    // popup with address
+    // 🔥 DYNAMIC POPUP (KEY FIX)
     popupRef.current = new mapboxgl.Popup({
       offset: 25,
       closeButton: false,
     })
       .setLngLat([lngNum, latNum])
       .setHTML(
-        `<strong>Trip Destination</strong><br/>${address || ""}`
+        `<strong>${address || "Trip Destination"}</strong>`
       )
       .addTo(map.current);
 
-    // move camera properly
+    // center map
     map.current.flyTo({
       center: [lngNum, latNum],
       zoom: 10,
@@ -94,7 +94,7 @@ const MapBoxView = ({
             data.features?.[0]?.place_name || "";
 
           popupRef.current.setHTML(
-            `<strong>Selected Location</strong><br/>${place}`
+            `<strong>${place}</strong>`
           );
 
           onSelect?.({
@@ -111,7 +111,7 @@ const MapBoxView = ({
       return () =>
         map.current.off("click", clickHandler);
     }
-  }, [latNum, lngNum, mode, onSelect, address]);
+  }, [latNum, lngNum, address, mode, onSelect]);
 
   return (
     <div

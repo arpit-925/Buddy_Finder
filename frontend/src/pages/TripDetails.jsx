@@ -17,7 +17,7 @@ const TripDetails = () => {
   const [joining, setJoining] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  /* ================= FETCH TRIP ================= */
+  /* ================= FETCH ================= */
   const fetchTrip = async () => {
     try {
       const res = await api.get(`/trips/${id}`);
@@ -54,7 +54,7 @@ const TripDetails = () => {
       return;
     }
 
-    if (!window.confirm("Are you sure you want to delete this trip?")) return;
+    if (!window.confirm("Are you sure?")) return;
 
     try {
       setDeleting(true);
@@ -95,7 +95,7 @@ const TripDetails = () => {
     <div className="bg-slate-50 px-4 py-8 min-h-[calc(100vh-64px)]">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* ================= LEFT ================= */}
+        {/* LEFT */}
         <div className="lg:col-span-2 space-y-6">
 
           {/* HERO */}
@@ -155,27 +155,32 @@ const TripDetails = () => {
                 </h3>
 
                 <MapBoxView
-                  lat={Number(trip.location.lat)}
-                  lng={Number(trip.location.lng)}
-                  address={trip.location.address}
+                  lat={trip.location.lat}
+                  lng={trip.location.lng}
+                  address={
+                    trip.location.address ||
+                    trip.destination
+                  }
                   mode="view"
                 />
 
-                {trip.location.address && (
-                  <p className="text-sm text-slate-500 mt-2">
-                    📍 {trip.location.address}
-                  </p>
-                )}
+                <p className="text-sm text-slate-500 mt-2">
+                  📍{" "}
+                  {trip.location.address ||
+                    trip.destination}
+                </p>
               </div>
             )}
         </div>
 
-        {/* ================= RIGHT ================= */}
+        {/* RIGHT */}
         <div className="space-y-4 lg:sticky top-24 h-fit">
 
           {/* HOST */}
           <div className="bg-white rounded-2xl shadow p-4">
-            <h3 className="font-semibold mb-2">Trip Host</h3>
+            <h3 className="font-semibold mb-2">
+              Trip Host
+            </h3>
             <p className="font-medium text-slate-800">
               {trip.createdBy?.name}
             </p>
@@ -183,46 +188,6 @@ const TripDetails = () => {
               {trip.createdBy?.email}
             </p>
           </div>
-
-          {/* PARTICIPANTS */}
-          {isParticipant && (
-            <div className="bg-white rounded-2xl shadow p-4">
-              <h3 className="font-semibold mb-3">
-                Participants
-              </h3>
-
-              <p className="text-xs text-slate-500">Host</p>
-              <p className="font-medium mb-3">
-                {trip.createdBy?.name}
-              </p>
-
-              <p className="text-xs text-slate-500 mb-1">
-                Joined Users
-              </p>
-
-              {trip.joinedUsers.length <= 1 ? (
-                <p className="text-sm text-slate-400">
-                  No joined users yet
-                </p>
-              ) : (
-                <ul className="space-y-1">
-                  {trip.joinedUsers
-                    .filter(
-                      (u) =>
-                        u?._id !== trip.createdBy?._id
-                    )
-                    .map((u) => (
-                      <li
-                        key={u._id}
-                        className="text-sm font-medium text-slate-700"
-                      >
-                        {u.name}
-                      </li>
-                    ))}
-                </ul>
-              )}
-            </div>
-          )}
 
           {/* ACTIONS */}
           <div className="bg-white rounded-2xl shadow p-4 space-y-3">
@@ -233,7 +198,7 @@ const TripDetails = () => {
                   onClick={() =>
                     navigate(`/edit-trip/${trip._id}`)
                   }
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-semibold"
+                  className="w-full bg-yellow-500 text-white py-2 rounded-lg font-semibold"
                 >
                   ✏️ Edit Trip
                 </button>
@@ -241,7 +206,7 @@ const TripDetails = () => {
                 <button
                   onClick={handleDeleteTrip}
                   disabled={deleting}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
+                  className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
                 >
                   {deleting ? "Deleting..." : "🗑️ Delete Trip"}
                 </button>
@@ -253,7 +218,7 @@ const TripDetails = () => {
                 onClick={() =>
                   navigate(`/chat/${trip._id}`)
                 }
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold"
+                className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold"
               >
                 Open Chat 💬
               </button>
@@ -263,7 +228,7 @@ const TripDetails = () => {
               <button
                 onClick={handleJoinTrip}
                 disabled={joining || spotsLeft === 0 || isClosed}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
+                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
               >
                 {joining ? "Sending..." : "Join Trip"}
               </button>
