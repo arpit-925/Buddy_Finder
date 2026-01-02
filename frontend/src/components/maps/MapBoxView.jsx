@@ -10,10 +10,12 @@ const MapBoxView = ({
   markers = [],
   mode = "view",
   onSelect,
+  address,
 }) => {
   const mapRef = useRef(null);
   const map = useRef(null);
-  const singleMarker = useRef(null);
+  const markerRef = useRef(null);
+  const popupRef = useRef(null);
 
   const latNum = Number(lat);
   const lngNum = Number(lng);
@@ -35,30 +37,52 @@ const MapBoxView = ({
   }, []);
 
   /* =========================
-     SINGLE MARKER + FLY
+     DESTINATION MARKER
   ========================= */
   useEffect(() => {
     if (!map.current || isNaN(latNum) || isNaN(lngNum)) return;
 
-    // remove old marker
-    singleMarker.current?.remove();
+    // remove old marker & popup
+    markerRef.current?.remove();
+    popupRef.current?.remove();
 
-    // add marker
-    singleMarker.current = new mapboxgl.Marker()
+    // custom marker (more visible)
+    const el = document.createElement("div");
+    el.innerHTML = "📍";
+    el.style.fontSize = "28px";
+
+    markerRef.current = new mapboxgl.Marker(el)
       .setLngLat([lngNum, latNum])
       .addTo(map.current);
 
-    // move map to location
+    // popup with address
+    popupRef.current = new mapboxgl.Popup({
+      offset: 25,
+      closeButton: false,
+    })
+      .setLngLat([lngNum, latNum])
+      .setHTML(
+        `<strong>Trip Destination</strong><br/>${address || ""}`
+      )
+      .addTo(map.current);
+
+    // move camera properly
     map.current.flyTo({
       center: [lngNum, latNum],
       zoom: 10,
+      speed: 1.2,
       essential: true,
     });
 
+    /* =========================
+       CLICK TO SELECT (EDIT MODE)
+    ========================= */
     if (mode === "edit") {
       const clickHandler = async (e) => {
         const { lng, lat } = e.lngLat;
-        singleMarker.current.setLngLat([lng, lat]);
+
+        markerRef.current.setLngLat([lng, lat]);
+        popupRef.current.setLngLat([lng, lat]);
 
         try {
           const res = await fetch(
@@ -66,10 +90,17 @@ const MapBoxView = ({
           );
           const data = await res.json();
 
+          const place =
+            data.features?.[0]?.place_name || "";
+
+          popupRef.current.setHTML(
+            `<strong>Selected Location</strong><br/>${place}`
+          );
+
           onSelect?.({
             lat,
             lng,
-            address: data.features?.[0]?.place_name || "",
+            address: place,
           });
         } catch (err) {
           console.error("Reverse geocode failed", err);
@@ -77,9 +108,10 @@ const MapBoxView = ({
       };
 
       map.current.on("click", clickHandler);
-      return () => map.current.off("click", clickHandler);
+      return () =>
+        map.current.off("click", clickHandler);
     }
-  }, [latNum, lngNum, mode, onSelect]);
+  }, [latNum, lngNum, mode, onSelect, address]);
 
   return (
     <div

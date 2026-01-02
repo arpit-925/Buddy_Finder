@@ -17,7 +17,7 @@ const TripDetails = () => {
   const [joining, setJoining] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  /* ================= FETCH ================= */
+  /* ================= FETCH TRIP ================= */
   const fetchTrip = async () => {
     try {
       const res = await api.get(`/trips/${id}`);
@@ -59,7 +59,7 @@ const TripDetails = () => {
     try {
       setDeleting(true);
       await api.delete(`/trips/${trip._id}`);
-      toast.success("Trip deleted successfully");
+      toast.success("Trip deleted");
       navigate("/explore");
     } catch {
       toast.error("Failed to delete trip");
@@ -98,7 +98,7 @@ const TripDetails = () => {
         {/* ================= LEFT ================= */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* HERO CARD */}
+          {/* HERO */}
           <div className="bg-white rounded-2xl shadow overflow-hidden">
             <img
               src={
@@ -157,6 +157,8 @@ const TripDetails = () => {
                 <MapBoxView
                   lat={Number(trip.location.lat)}
                   lng={Number(trip.location.lng)}
+                  address={trip.location.address}
+                  mode="view"
                 />
 
                 {trip.location.address && (
@@ -169,7 +171,7 @@ const TripDetails = () => {
         </div>
 
         {/* ================= RIGHT ================= */}
-        <div className="space-y-4 sticky top-24 h-fit">
+        <div className="space-y-4 lg:sticky top-24 h-fit">
 
           {/* HOST */}
           <div className="bg-white rounded-2xl shadow p-4">
@@ -241,9 +243,7 @@ const TripDetails = () => {
                   disabled={deleting}
                   className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
                 >
-                  {deleting
-                    ? "Deleting..."
-                    : "🗑️ Delete Trip"}
+                  {deleting ? "Deleting..." : "🗑️ Delete Trip"}
                 </button>
               </>
             )}
