@@ -44,7 +44,7 @@ const ProfileCard = () => {
 
             <button
               onClick={() => setIsEditing(true)}
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+              className="mt-4 bg-pink-500 text-white px-4 py-2 rounded"
             >
               Edit Profile
             </button>

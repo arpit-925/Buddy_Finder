@@ -101,7 +101,7 @@ const ExploreTrips = () => {
       <div className="max-w-7xl mx-auto mb-4 lg:hidden">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold"
+          className="w-full bg-pink-600 text-white py-2 rounded-lg font-semibold"
         >
           {showFilters ? "Hide Filters" : "Show Filters"}
         </button>
@@ -124,7 +124,7 @@ const ExploreTrips = () => {
           <input
             type="text"
             placeholder="Search destination..."
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -142,7 +142,7 @@ const ExploreTrips = () => {
               step="1000"
               value={budgetRange}
               onChange={(e) => setBudgetRange(Number(e.target.value))}
-              className="w-full accent-blue-600 mt-2"
+              className="w-full accent-pink-600 mt-2"
             />
 
             <div className="flex justify-between text-xs text-slate-400">
@@ -171,7 +171,7 @@ const ExploreTrips = () => {
           </label>
 
           {(preferredTravelType || userPrefs.budget) && (
-            <p className="text-xs text-blue-600">
+            <p className="text-xs text-pink-600">
               🎯 Personalized for you
             </p>
           )}
@@ -220,7 +220,7 @@ const ExploreTrips = () => {
 
                         <Link
                           to={`/trip/${trip._id}`}
-                          className="block mt-3 text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold transition"
+                          className="block mt-3 text-center bg-pink-600 hover:bg-pink-700 text-white py-2 rounded-lg text-sm font-semibold transition"
                         >
                           View Trip
                         </Link>

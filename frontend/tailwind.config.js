@@ -7,7 +7,7 @@ export default {
    theme: {
     extend: {
       colors: {
-        primary: "#2563eb",
+        primary: "#db2777", // pink-600 (sunset theme)
         accent: "#10b981",
         surface: "#ffffff",
         background: "#f8fafc",

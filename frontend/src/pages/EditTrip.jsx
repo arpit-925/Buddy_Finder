@@ -180,7 +180,7 @@ const EditTrip = () => {
 
           <button
             disabled={saving}
-            className="w-full bg-blue-600 text-white py-2 rounded-full"
+            className="w-full bg-pink-600 text-white py-2 rounded-full"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>

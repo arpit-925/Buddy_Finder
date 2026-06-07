@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const VerifyEmailNotice = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-300">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
         
         <div className="text-5xl mb-4">📧</div>
@@ -23,7 +23,7 @@ const VerifyEmailNotice = () => {
 
         <Link
           to="/login"
-          className="inline-block bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition"
+          className="inline-block bg-pink-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-pink-700 transition"
         >
           Go to Login
         </Link>

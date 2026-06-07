@@ -36,26 +36,26 @@ const Navbar = () => {
         {/* RIGHT — ALL MENU ITEMS */}
         <div className="hidden md:flex items-center gap-8 text-sm">
 
-          <Link to="/explore" className="hover:text-sky-400">
+          <Link to="/explore" className="hover:text-pink-400">
             Explore Trips
           </Link>
 
           {user && (
             <Link
               to="/create-trip"
-              className="bg-blue-500 px-4 py-1.5 rounded-full hover:bg-blue-600"
+              className="bg-pink-600 px-4 py-1.5 rounded-full hover:bg-pink-700"
             >
               + Create Trip
             </Link>
           )}
 
-          <Link to="/about" className="hover:text-sky-400">
+          <Link to="/about" className="hover:text-pink-400">
             About
           </Link>
 
           {user && (
             <>
-              <Link to="/profile" className="hover:text-sky-400">
+              <Link to="/profile" className="hover:text-pink-400">
                 Profile
               </Link>
 
@@ -107,10 +107,10 @@ const Navbar = () => {
 
           {!user && (
             <>
-              <Link to="/login" className="hover:text-sky-400">
+              <Link to="/login" className="hover:text-pink-400">
                 Login
               </Link>
-              <Link to="/register" className="hover:text-sky-400">
+              <Link to="/register" className="hover:text-pink-400">
                 Register
               </Link>
             </>
@@ -138,7 +138,7 @@ const Navbar = () => {
             <>
               <Link
                 to="/create-trip"
-                className="block bg-blue-500 px-4 py-2 rounded-full text-sm text-center"
+                className="block bg-pink-600 px-4 py-2 rounded-full text-sm text-center"
               >
                 + Create Trip
               </Link>

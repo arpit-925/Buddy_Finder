@@ -139,7 +139,7 @@ const Chat = () => {
                 <div
                   className={`px-4 py-2 rounded-lg max-w-xs text-sm ${
                     isMine
-                      ? "bg-blue-600 text-white rounded-br-none"
+                      ? "bg-pink-600 text-white rounded-br-none"
                       : "bg-gray-200 text-gray-800 rounded-bl-none"
                   }`}
                 >
@@ -175,7 +175,7 @@ const Chat = () => {
           />
           <button
             onClick={sendMessage}
-            className="bg-blue-600 text-white px-4 py-2 rounded-full"
+            className="bg-pink-600 text-white px-4 py-2 rounded-full"
           >
             Send
           </button>

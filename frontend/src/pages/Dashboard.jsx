@@ -43,7 +43,7 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate("/explore")}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-10 py-4 rounded-full text-lg transition"
+              className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-10 py-4 rounded-full text-lg transition"
             >
               Explore Trips
             </button>

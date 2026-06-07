@@ -23,7 +23,7 @@ const TripCard = ({ trip }) => {
         <div className="mt-4 flex justify-between items-center">
           <Link
             to={`/trip/${trip._id}`}
-            className="text-blue-600 text-sm font-medium"
+            className="text-pink-600 text-sm font-medium"
           >
             View Details
           </Link>

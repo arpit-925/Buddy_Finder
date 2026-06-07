@@ -37,11 +37,11 @@
 
 .input {
   @apply w-full px-4 py-2 border border-gray-300 rounded-lg
-         focus:outline-none focus:ring-2 focus:ring-blue-500
+         focus:outline-none focus:ring-2 focus:ring-pink-500
          transition;
 }
 
 .btn {
   @apply w-full py-2 rounded-lg font-medium text-white
-         bg-blue-600 hover:bg-blue-700 transition;
+         bg-pink-600 hover:bg-pink-700 transition;
 }

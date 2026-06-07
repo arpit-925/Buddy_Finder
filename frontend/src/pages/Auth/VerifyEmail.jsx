@@ -49,7 +49,7 @@ const VerifyEmail = () => {
       <div className="p-8 bg-white shadow-lg rounded-xl text-center">
         {status === "verifying" && (
           <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mb-4"></div>
             <p className="text-lg font-medium text-gray-700">Verifying your email...</p>
           </div>
         )}
@@ -69,7 +69,7 @@ const VerifyEmail = () => {
             <p className="text-gray-500 mb-6">The link is invalid or has expired.</p>
             <button
               onClick={() => navigate("/login")}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
             >
               Back to Login
             </button>

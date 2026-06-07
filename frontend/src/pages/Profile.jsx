@@ -70,7 +70,7 @@ const Profile = () => {
 
             <Link
               to="/edit-profile"
-              className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition"
+              className="inline-block mt-4 bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition"
             >
               Edit Profile
             </Link>
@@ -185,7 +185,7 @@ const TripGrid = ({ trips, isCreator }) => (
             <div className="flex gap-2 mt-3">
               <Link
                 to={`/trip/${trip._id}`}
-                className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition"
+                className="text-xs bg-pink-600 hover:bg-pink-700 text-white px-3 py-1.5 rounded transition"
               >
                 View
               </Link>

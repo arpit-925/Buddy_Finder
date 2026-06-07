@@ -228,7 +228,7 @@ const TripDetails = () => {
               <button
                 onClick={handleJoinTrip}
                 disabled={joining || spotsLeft === 0 || isClosed}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
+                className="w-full bg-pink-600 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
               >
                 {joining ? "Sending..." : "Join Trip"}
               </button>

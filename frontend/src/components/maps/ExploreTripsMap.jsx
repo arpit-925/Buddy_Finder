@@ -19,7 +19,7 @@ const ExploreTripsMap = ({ trips }) => {
                 </p>
                 <Link
                   to={`/trip/${trip._id}`}
-                  className="text-blue-600 underline text-xs"
+                  className="text-pink-600 underline text-xs"
                 >
                   View Trip
                 </Link>

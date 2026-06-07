@@ -152,7 +152,7 @@ const EditProfile = () => {
 
           <button
             disabled={saving}
-            className="w-full bg-blue-600 text-white py-2 rounded-full disabled:opacity-60"
+            className="w-full bg-pink-600 text-white py-2 rounded-full disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>

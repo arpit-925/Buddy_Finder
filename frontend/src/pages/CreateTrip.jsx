@@ -208,7 +208,7 @@ console.log("Saving trip with Image URL:", imageUrl);
             required
           />
 
-          <button className="w-full bg-blue-600 text-white py-2 rounded-full">
+          <button className="w-full bg-pink-600 text-white py-2 rounded-full">
             Create Trip
           </button>
         </form>
