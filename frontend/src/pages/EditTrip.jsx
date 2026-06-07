@@ -111,10 +111,11 @@ const EditTrip = () => {
           Edit Trip ✏️
         </h2>
 
-        {location && (
+          {location && (
           <MapBoxView
             lat={location.lat}
             lng={location.lng}
+            mode="edit"
             onSelect={setLocation}
           />
         )}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -16,67 +16,65 @@ const MapBoxView = ({
   const map = useRef(null);
   const markerRef = useRef(null);
   const popupRef = useRef(null);
+  const [ready, setReady] = useState(false);
 
   const latNum = Number(lat);
   const lngNum = Number(lng);
+  const hasCoords =
+    !isNaN(latNum) && !isNaN(lngNum) && latNum !== 0 && lngNum !== 0;
 
-  /* =========================
-     INIT MAP
-  ========================= */
   useEffect(() => {
     if (!mapRef.current || map.current) return;
+
+    const initialCenter = hasCoords ? [lngNum, latNum] : [77.209, 28.6139];
+    const initialZoom = hasCoords ? 13 : 4;
 
     map.current = new mapboxgl.Map({
       container: mapRef.current,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [lngNum || 77.209, latNum || 28.6139],
-      zoom: latNum && lngNum ? 9 : 4,
+      center: initialCenter,
+      zoom: initialZoom,
     });
 
-    return () => map.current?.remove();
+    map.current.on("load", () => setReady(true));
+
+    return () => {
+      map.current?.remove();
+      map.current = null;
+      setReady(false);
+    };
   }, []);
 
-  /* =========================
-     DESTINATION MARKER + POPUP
-  ========================= */
   useEffect(() => {
-    if (!map.current || isNaN(latNum) || isNaN(lngNum)) return;
+    if (!map.current || !ready || !hasCoords) return;
 
-    // remove old marker & popup
     markerRef.current?.remove();
     popupRef.current?.remove();
 
-    // visible marker
     const el = document.createElement("div");
     el.innerHTML = "📍";
     el.style.fontSize = "28px";
+    el.style.filter = "drop-shadow(0 2px 4px rgba(0,0,0,0.3))";
 
     markerRef.current = new mapboxgl.Marker(el)
       .setLngLat([lngNum, latNum])
       .addTo(map.current);
 
-    // 🔥 DYNAMIC POPUP (KEY FIX)
     popupRef.current = new mapboxgl.Popup({
       offset: 25,
       closeButton: false,
     })
       .setLngLat([lngNum, latNum])
-      .setHTML(
-        `<strong>${address || "Trip Destination"}</strong>`
-      )
+      .setHTML(`<strong>${address || "Trip Destination"}</strong>`)
       .addTo(map.current);
 
-    // center map
     map.current.flyTo({
       center: [lngNum, latNum],
-      zoom: 10,
-      speed: 1.2,
+      zoom: 13,
+      speed: 0.8,
       essential: true,
     });
 
-    /* =========================
-       CLICK TO SELECT (EDIT MODE)
-    ========================= */
     if (mode === "edit") {
       const clickHandler = async (e) => {
         const { lng, lat } = e.lngLat;
@@ -89,13 +87,9 @@ const MapBoxView = ({
             `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`
           );
           const data = await res.json();
+          const place = data.features?.[0]?.place_name || "";
 
-          const place =
-            data.features?.[0]?.place_name || "";
-
-          popupRef.current.setHTML(
-            `<strong>${place}</strong>`
-          );
+          popupRef.current.setHTML(`<strong>${place}</strong>`);
 
           onSelect?.({
             lat,
@@ -108,10 +102,9 @@ const MapBoxView = ({
       };
 
       map.current.on("click", clickHandler);
-      return () =>
-        map.current.off("click", clickHandler);
+      return () => map.current?.off("click", clickHandler);
     }
-  }, [latNum, lngNum, address, mode, onSelect]);
+  }, [ready, hasCoords, latNum, lngNum, address, mode, onSelect]);
 
   return (
     <div
