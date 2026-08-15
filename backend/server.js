@@ -23,14 +23,23 @@ const app = express();
    CORS
 ====================== */
 const allowedOrigins = [
-  "http://localhost:5173",
   "https://buddyfinder-du2b.vercel.app",
   "https://buddy-finder-mh40.onrender.com",
 ];
 
+// Allow any localhost dev port (Vite picks the first free one: 5173, 5174, ...)
+const isLocalhost = (origin) =>
+  origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || isLocalhost(origin) || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -93,7 +102,13 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || isLocalhost(origin) || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST"],
     credentials: true,
   },

@@ -26,7 +26,12 @@ const protect = async (req, res, next) => {
 
     next(); // ✅ REQUIRED
   } catch (error) {
-    res.status(401).json({ message: "Token failed" });
+    if (error instanceof jwt.TokenExpiredError) {
+      return res
+        .status(401)
+        .json({ message: "Token expired, please log in again" });
+    }
+    res.status(401).json({ message: "Invalid token" });
   }
 };
 

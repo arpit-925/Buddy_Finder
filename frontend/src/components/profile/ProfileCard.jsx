@@ -16,11 +16,10 @@ const ProfileCard = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    // 🔗 API call will go here later
-    console.log("Updated Profile:", formData);
-    setIsEditing(false);
-  };
+const handleSave = () => {
+  // 🔗 API call will go here later
+  setIsEditing(false);
+};
 
   return (
     <div className="max-w-md mx-auto bg-white shadow-lg rounded-xl p-6">

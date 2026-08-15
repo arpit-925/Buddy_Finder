@@ -13,6 +13,7 @@ const EditProfile = () => {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [travelType, setTravelType] = useState("");
+  const [season, setSeason] = useState("");
   const [budget, setBudget] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
@@ -24,6 +25,7 @@ const EditProfile = () => {
       setName(user.name || "");
       setBio(user.bio || "");
       setTravelType(user.preferences?.travelType || "");
+      setSeason(user.preferences?.season || "");
       setBudget(user.preferences?.budget?.toString() || "");
       setPreview(user.avatar || "https://i.pravatar.cc/150");
     }
@@ -45,6 +47,27 @@ const EditProfile = () => {
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Basic validation
+    if (!name.trim()) {
+      return toast.error("Please enter your name");
+    }
+
+    if (name.trim().length < 2) {
+      return toast.error("Name must be at least 2 characters long");
+    }
+
+    if (bio && bio.length > 500) {
+      return toast.error("Bio must be less than 500 characters");
+    }
+
+    if (budget !== "" && isNaN(Number(budget))) {
+      return toast.error("Please enter a valid budget number");
+    }
+
+    if (budget !== "" && Number(budget) < 0) {
+      return toast.error("Budget cannot be negative");
+    }
 
     try {
       setSaving(true);
@@ -70,6 +93,7 @@ const EditProfile = () => {
         avatar: avatarUrl,
         preferences: {
           travelType: travelType || user.preferences?.travelType,
+          season: season || user.preferences?.season,
           budget: budgetValue,
         },
       });
@@ -86,12 +110,14 @@ const EditProfile = () => {
         URL.revokeObjectURL(preview);
       }
 
-      toast.success("Profile updated successfully ✅");
+      toast.success("Profile updated successfully");
       navigate("/profile");
-    } 
+    } else {
+      throw new Error(res.data?.message || "Profile update failed");
+    }
   }
     catch (error) {
-      toast.error(error.response?.data?.message || "Update failed");
+      toast.error(error.response?.data?.message || error.message || "Profile update failed");
     } finally {
       setSaving(false);
     }
@@ -140,6 +166,19 @@ const EditProfile = () => {
             <option value="beach">Beach</option>
             <option value="city">City</option>
             <option value="adventure">Adventure</option>
+            <option value="spiritual">Spiritual</option>
+          </select>
+
+          <select
+            value={season}
+            onChange={(e) => setSeason(e.target.value)}
+            className="input w-full"
+          >
+            <option value="">Preferred Season</option>
+            <option value="summer">Summer</option>
+            <option value="winter">Winter</option>
+            <option value="monsoon">Monsoon</option>
+            <option value="spring">Spring</option>
           </select>
 
           <input
@@ -154,7 +193,7 @@ const EditProfile = () => {
             disabled={saving}
             className="w-full bg-pink-600 text-white py-2 rounded-full disabled:opacity-60"
           >
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? "Saving profile..." : "Save Changes"}
           </button>
         </form>
       </div>

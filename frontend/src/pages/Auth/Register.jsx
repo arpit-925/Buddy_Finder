@@ -33,6 +33,12 @@ const Register = () => {
     e.preventDefault();
     if (loading) return;
 
+// Validate password length
+if (formData.password.length < 6) {
+  toast.error("Password must be at least 6 characters long");
+  return;
+}
+
     try {
       setLoading(true);
       await registerUser(formData);
@@ -143,9 +149,6 @@ const Register = () => {
             <h2 className="text-3xl font-bold text-slate-900">
               Create your account
             </h2>
-            <p className="text-slate-500 mt-1.5">
-              Start your journey with Buddy Finder
-            </p>
           </div>
 
           {/* Form */}

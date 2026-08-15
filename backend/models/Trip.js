@@ -29,6 +29,8 @@ image: { type: String },
     budget: Number,
     maxPeople: Number,
     description: String,
+    travelType: { type: String, default: "" },
+    season: { type: String, default: "" },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

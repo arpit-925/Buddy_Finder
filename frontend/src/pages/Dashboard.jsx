@@ -1,80 +1,16 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiChevronDown, FiCompass, FiMapPin, FiSearch, FiShield, FiUsers } from "react-icons/fi";
 import { AuthContext } from "../context/AuthContext";
+import DestinationAutocomplete from "../components/maps/DestinationAutocomplete";
 
-const Dashboard = () => {
-  const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+const travelTypes = ["Any type", "Mountain", "Beach", "City", "Adventure"];
+const budgets = [{ label: "Any budget", value: "" }, { label: "Under ₹10,000", value: "10000" }, { label: "Under ₹25,000", value: "25000" }, { label: "Under ₹50,000", value: "50000" }];
 
-  useEffect(() => {
-    document.title = "Buddy Finder 🌍";
-  }, []);
-
-  return (
-    <div className="relative w-full min-h-[calc(100vh-64px)] overflow-hidden">
-
-      {/* BACKGROUND IMAGE */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')",
-        }}
-      >
-        {/* TRANSLUCENT OVERLAY */}
-        <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[1px]" />
-      </div>
-
-      {/* FOOTER-PLACED CONTAINER */}
-      <div className="absolute bottom-12 md:bottom-20 left-1/2 -translate-x-1/2 z-10 w-full px-6">
-
-        {/* GLASS CARD */}
-        <div className="mx-auto bg-white/80 backdrop-blur-xl border border-white/40 rounded-3xl p-8 md:p-12 text-center max-w-2xl w-full shadow-2xl">
-          
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4">
-            Adventure Awaits
-          </h1>
-
-          <p className="text-lg md:text-xl text-slate-600 mb-8">
-            Find like-minded travel buddies and explore the world together.
-          </p>
-
-          {/* CTA BUTTONS */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => navigate("/explore")}
-              className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-10 py-4 rounded-full text-lg transition"
-            >
-              Explore Trips
-            </button>
-
-            {!user && (
-              <button
-                onClick={() => navigate("/login")}
-                className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 font-semibold px-10 py-4 rounded-full text-lg transition"
-              >
-                Sign In
-              </button>
-            )}
-
-            {user && (
-              <button
-                onClick={() => navigate("/profile")}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-semibold px-10 py-4 rounded-full text-lg transition"
-              >
-                My Profile
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* FOOTNOTE */}
-        <p className="mt-6 text-center text-white/70 text-sm">
-          Join 2,000+ travelers worldwide
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default Dashboard;
+export default function Dashboard() {
+  const navigate = useNavigate(); const { user } = useContext(AuthContext); const [destination, setDestination] = useState(""); const [travelType, setTravelType] = useState("Any type"); const [budget, setBudget] = useState("");
+  useEffect(() => { document.title = "Buddy Finder | Find your next adventure"; }, []);
+  const search = () => navigate("/explore", { state: { destination, budget: budget ? Number(budget) : undefined, travelType } });
+  return <main className="overflow-hidden bg-background"><section className="relative isolate min-h-[650px] bg-slate-950 px-4 pb-28 pt-16 sm:min-h-[685px] sm:pt-20"><div className="absolute inset-0 -z-20 bg-[url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2200&q=90')] bg-cover bg-center" /><div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#071b3e]/95 via-[#0b3871]/58 to-[#0b3871]/10" /><div className="mx-auto max-w-6xl"><div className="max-w-2xl"><p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 px-4 py-2 text-xs font-bold tracking-wider text-white backdrop-blur"><FiCompass />TRAVEL. CONNECT. EXPLORE.</p><h1 className="mt-6 text-5xl font-extrabold leading-[.97] tracking-tight text-white sm:text-7xl">Find your next<br /><span className="bg-gradient-to-r from-cyan-300 to-blue-500 bg-clip-text text-transparent">adventure.</span></h1></div><div className="relative z-30 mt-11 rounded-3xl bg-white/95 p-3 shadow-2xl backdrop-blur sm:p-4"><div className="grid divide-y divide-slate-200 md:grid-cols-[1.45fr_.95fr_.95fr_auto] md:divide-x md:divide-y-0"><div className="px-3 py-3 sm:px-5"><label className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink"><FiMapPin className="text-primary" />Where do you want to go?</label><DestinationAutocomplete value={destination} onChange={setDestination} onSelect={(place) => { setDestination(place.address); }} placeholder="Search destination" /></div><label className="relative px-3 py-3 sm:px-5"><span className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink"><FiCompass className="text-teal" />Travel type</span><select value={travelType} onChange={(event) => setTravelType(event.target.value)} className="w-full appearance-none bg-transparent py-1 text-sm text-muted outline-none">{travelTypes.map((type) => <option key={type}>{type}</option>)}</select><FiChevronDown className="pointer-events-none absolute bottom-4 right-5 text-muted" /></label><label className="relative px-3 py-3 sm:px-5"><span className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink"><span className="font-bold text-amber-500">₹</span>Budget</span><select value={budget} onChange={(event) => setBudget(event.target.value)} className="w-full appearance-none bg-transparent py-1 text-sm text-muted outline-none">{budgets.map((item) => <option key={item.label} value={item.value}>{item.label}</option>)}</select><FiChevronDown className="pointer-events-none absolute bottom-4 right-5 text-muted" /></label><div className="flex items-center p-3 sm:p-4"><button onClick={search} className="btn w-full gap-2 px-6 py-3.5"><FiSearch />Search trips</button></div></div></div></div></section><section className="bg-[#f8fafc] px-4 py-16 text-center sm:py-20"><div className="mx-auto max-w-7xl"><p className="text-sm font-bold tracking-wide text-teal">WHY BUDDY FINDER?</p><h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-[42px]">Travel is better when it’s shared.</h2><div className="mt-11 grid gap-6 text-left md:grid-cols-3"><Benefit icon={<FiUsers />} color="bg-blue-50 text-primary" title="Find compatible buddies" text="Connect with travelers who share your interests, travel style, and budget." /><Benefit icon={<FiCompass />} color="bg-emerald-50 text-teal" title="Discover real trips" text="Explore community-created trips and join adventures that work for you." /><Benefit icon={<FiShield />} color="bg-amber-50 text-amber-500" title="Plan with confidence" text="See trip details and chat with your group before you embark." /></div><button onClick={() =>  user ?   navigate("/create-trip", { state: { destination, travelType, budget: budget ? Number(budget) : undefined } }) :   navigate("/register")} className="btn mt-11 gap-2 px-6 py-3">Create your trip <span aria-hidden="true">→</span></button></div></section></main>;
+}
+function Benefit({ icon, color, title, text }) { return <article className="flex min-h-44 items-start gap-5 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"><div className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-2xl ${color}`}>{icon}</div><div><h3 className="pt-1 text-lg font-bold text-ink">{title}</h3><p className="mt-3 text-[15px] leading-7 text-muted">{text}</p></div></article>; }

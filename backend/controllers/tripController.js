@@ -1,5 +1,6 @@
 import Trip from "../models/Trip.js";
 import Notification from "../models/Notification.js";
+import mongoose from "mongoose";
 
 /* =========================
    CREATE TRIP
@@ -16,6 +17,8 @@ export const createTrip = async (req, res) => {
       description,
       image,
       location,
+      travelType,
+      season,
     } = req.body;
 
     if (
@@ -41,6 +44,8 @@ export const createTrip = async (req, res) => {
       preferences: preferences || "",
       description,
       image,
+      travelType: travelType || "",
+      season: season || "",
       location: {
         type: "Point",
         coordinates: [location.lng, location.lat],
@@ -102,6 +107,10 @@ export const getAllTrips = async (req, res) => {
 ========================= */
 export const getTripById = async (req, res) => {
   try {
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
     const trip = await Trip.findById(req.params.id)
       .populate("createdBy", "name email avatar")
       .populate("joinedUsers", "name email avatar")
@@ -131,6 +140,10 @@ export const getTripById = async (req, res) => {
 ========================= */
 export const updateTrip = async (req, res) => {
   try {
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
     const trip = await Trip.findById(req.params.id);
     if (!trip) return res.status(404).json({ message: "Trip not found" });
 
@@ -146,6 +159,8 @@ export const updateTrip = async (req, res) => {
       maxPeople: req.body.maxPeople || trip.maxPeople,
       description: req.body.description || trip.description,
       image: req.body.image ?? trip.image,
+      travelType: req.body.travelType ?? trip.travelType,
+      season: req.body.season ?? trip.season,
     });
 
     if (req.body.location?.lat && req.body.location?.lng) {
@@ -187,6 +202,10 @@ export const updateTrip = async (req, res) => {
 ========================= */
 export const deleteTrip = async (req, res) => {
   try {
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
     const trip = await Trip.findById(req.params.id);
     if (!trip) return res.status(404).json({ message: "Trip not found" });
 
@@ -206,6 +225,10 @@ export const deleteTrip = async (req, res) => {
 ========================= */
 export const joinTrip = async (req, res) => {
   try {
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
     const trip = await Trip.findById(req.params.id);
     if (!trip) return res.status(404).json({ message: "Trip not found" });
 
@@ -235,6 +258,10 @@ export const joinTrip = async (req, res) => {
 ========================= */
 export const handleJoinRequest = async (req, res) => {
   try {
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
     const { userId, action } = req.body;
     const trip = await Trip.findById(req.params.id);
 

@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema(
       },
       season: {
         type: String,
-        enum: ["summer", "winter", "monsoon", ""],
+        enum: ["summer", "winter", "monsoon", "spring", ""],
         default: "",
       },
     },

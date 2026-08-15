@@ -36,6 +36,12 @@ const Login = () => {
     e.preventDefault();
     if (loading) return;
 
+// Validate password length
+if (formData.password.length < 6) {
+  toast.error("Password must be at least 6 characters long");
+  return;
+}
+
     setShowResend(false);
 
     try {
@@ -167,9 +173,6 @@ const Login = () => {
           {/* Header */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-slate-900">Welcome back</h2>
-            <p className="text-slate-500 mt-1.5">
-              Login to continue your journey
-            </p>
           </div>
 
           {/* Form */}

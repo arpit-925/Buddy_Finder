@@ -1,29 +1,38 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
+import { FiCalendar, FiMapPin, FiUsers, FiMessageCircle, FiEdit3, FiTrash2, FiArrowLeft, FiPlus, FiCompass } from "react-icons/fi";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
-import Loader from "../components/common/Loader";
 import toast from "react-hot-toast";
 import JoinRequests from "../components/trips/JoinRequests";
 import MapBoxView from "../components/maps/MapBoxView";
+import Loader from "../components/common/Loader";
+import { resolveDestinationImage } from "../utils/destinationImage";
 
-const TripDetails = () => {
+export default function TripDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-
   const [trip, setTrip] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [joining, setJoining] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  /* ================= FETCH ================= */
   const fetchTrip = async () => {
     try {
-      const res = await api.get(`/trips/${id}`);
-      setTrip(res.data);
-    } catch {
-      toast.error("Failed to load trip");
+      setLoading(true);
+      const response = await api.get(`/trips/${id}`);
+      setTrip(response.data);
+      setNotFound(false);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        setTrip(null);
+        setNotFound(true);
+      } else {
+        setTrip(null);
+        toast.error("We couldn't load this trip. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -31,235 +40,223 @@ const TripDetails = () => {
 
   useEffect(() => {
     fetchTrip();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  /* ================= JOIN ================= */
-  const handleJoinTrip = async () => {
+  if (loading) return <Loader fullScreen />;
+
+  if (notFound || !trip) {
+    return (
+      <main className="grid min-h-[70vh] place-items-center bg-background px-4">
+        <div className="card max-w-md p-10 text-center">
+          <FiCompass className="mx-auto text-3xl text-primary" />
+          <h1 className="mt-4 text-2xl font-bold text-ink">Trip not found</h1>
+          <p className="mt-2 text-sm text-muted">
+            This trip may have been deleted or the link is incorrect.
+          </p>
+          <button onClick={() => navigate("/explore")} className="btn mt-6">
+            Browse trips
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const coverImage = trip.image || resolveDestinationImage(trip.destination);
+  const userId = user?._id?.toString();
+  const isHost = trip.createdBy?._id?.toString() === userId;
+  const isJoined = trip.joinedUsers?.some((member) => member === userId || member?._id === userId);
+  const requested = trip.joinRequests?.some((member) => member === userId || member?._id === userId);
+  const participants = trip.joinedUsers?.length || 0;
+  const closed = trip.status === "CLOSED" || participants >= trip.maxPeople;
+
+  const join = async () => {
     try {
       setJoining(true);
       await api.post(`/trips/join/${trip._id}`);
       toast.success("Join request sent");
       fetchTrip();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to join");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "We couldn't send your request.");
     } finally {
       setJoining(false);
     }
   };
 
-  /* ================= DELETE ================= */
-  const handleDeleteTrip = async () => {
-    if (trip.joinedUsers.length > 1) {
-      toast.error("Cannot delete a trip with joined users");
-      return;
-    }
-
-    if (!window.confirm("Are you sure?")) return;
-
+  const remove = async () => {
+    if (participants > 1) return toast.error("A trip with joined travelers can't be deleted.");
+    if (!window.confirm("Delete this trip? This cannot be undone.")) return;
     try {
       setDeleting(true);
       await api.delete(`/trips/${trip._id}`);
       toast.success("Trip deleted");
       navigate("/explore");
     } catch {
-      toast.error("Failed to delete trip");
+      toast.error("We couldn't delete this trip.");
     } finally {
       setDeleting(false);
     }
   };
 
-  if (loading) return <Loader fullScreen />;
-
-  if (!trip) {
-    return (
-      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
-        <p className="text-slate-500">Trip not found</p>
-      </div>
-    );
-  }
-
-  const userId = user?._id?.toString();
-  const isCreator = trip.createdBy?._id?.toString() === userId;
-  const isJoined = trip.joinedUsers?.some(
-    (u) => u === userId || u?._id === userId
-  );
-  const isRequested = trip.joinRequests?.some(
-    (u) => u === userId || u?._id === userId
-  );
-
-  const isParticipant = isCreator || isJoined;
-  const spotsLeft = trip.maxPeople - trip.joinedUsers.length;
-  const isClosed = trip.status === "CLOSED";
-
   return (
-    <div className="bg-slate-50 px-4 py-8 min-h-[calc(100vh-64px)]">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main className="min-h-screen bg-background px-4 py-8 sm:py-12">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-7 lg:grid-cols-[1fr_330px]">
+          <section className="space-y-7">
+            <article className="card overflow-hidden">
+              {coverImage ? (
+                <img src={coverImage} alt={trip.destination} className="h-64 w-full object-cover sm:h-80" />
+              ) : (
+                <div className="h-64 bg-ocean-gradient sm:h-80" />
+              )}
+              <div className="p-6 sm:p-8">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(-1)} aria-label="Go back" className="p-1 rounded hover:bg-slate-100">
+                      <FiArrowLeft className="h-4 w-4" />
+                    </button>
+                    <div>
+                      <p className="flex items-center gap-2 text-sm font-semibold text-teal">
+                        <FiMapPin />
+                        {trip.location?.address || trip.destination}
+                      </p>
+                      <h1 className="mt-2 text-3xl font-bold text-ink">{trip.destination}</h1>
+                    </div>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${closed ? "bg-slate-200 text-slate-700" : "bg-green-100 text-success"}`}>
+                    {closed ? "CLOSED" : "OPEN"}
+                  </span>
+                </div>
 
-        {/* LEFT */}
-        <div className="lg:col-span-2 space-y-6">
+                <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                  <Detail
+                    icon={<FiCalendar />}
+                    label="Dates"
+                    value={
+                      trip.startDate && trip.endDate
+                        ? `${new Date(trip.startDate).toLocaleDateString()} – ${new Date(trip.endDate).toLocaleDateString()}`
+                        : "Dates to be confirmed"
+                    }
+                  />
+                  <Detail icon="₹" label="Budget" value={`₹${Number(trip.budget || 0).toLocaleString()}`} />
+                  <Detail icon={<FiUsers />} label="Travelers" value={`${participants} / ${trip.maxPeople}`} />
+                </div>
 
-          {/* HERO */}
-          <div className="bg-white rounded-2xl shadow overflow-hidden">
-            <img
-              src={
-                trip.image ||
-                "https://images.unsplash.com/photo-1488646953014-85cb44e25828"
-              }
-              alt={trip.destination}
-              className="w-full h-72 object-cover"
-            />
-
-            <div className="p-6">
-              <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-slate-800">
-                  {trip.destination}
-                </h1>
-
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    isClosed
-                      ? "bg-red-100 text-red-600"
-                      : "bg-green-100 text-green-600"
-                  }`}
-                >
-                  {isClosed ? "Closed" : "Open"}
-                </span>
+                <div className="mt-8 border-t border-slate-100 pt-6">
+                  <h2 className="text-lg font-bold text-ink">About this trip</h2>
+                  <p className="mt-3 whitespace-pre-wrap leading-7 text-slate-600">{trip.description}</p>
+                </div>
               </div>
+            </article>
 
-              <p className="text-sm text-slate-500 mt-1">
-                {new Date(trip.startDate).toLocaleDateString()} →{" "}
-                {new Date(trip.endDate).toLocaleDateString()}
-              </p>
-
-              <p className="mt-4 text-slate-700">
-                {trip.description}
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
-                <p>
-                  <strong>Budget:</strong> ₹{trip.budget}
-                </p>
-                <p>
-                  <strong>Spots Left:</strong> {spotsLeft}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* MAP */}
-          {trip.location?.lat != null &&
-            trip.location?.lng != null && (
-              <div className="bg-white rounded-2xl shadow p-4">
-                <h3 className="font-semibold mb-2">
-                  Trip Location
-                </h3>
-
-                <MapBoxView
-                  lat={trip.location.lat}
-                  lng={trip.location.lng}
-                  address={
-                    trip.location.address ||
-                    trip.destination
-                  }
-                  mode="view"
-                />
-
-                <p className="text-sm text-slate-500 mt-2">
-                  📍{" "}
-                  {trip.location.address ||
-                    trip.destination}
-                </p>
-              </div>
-            )}
-        </div>
-
-        {/* RIGHT */}
-        <div className="space-y-4 lg:sticky top-24 h-fit">
-
-          {/* HOST */}
-          <div className="bg-white rounded-2xl shadow p-4">
-            <h3 className="font-semibold mb-2">
-              Trip Host
-            </h3>
-            <p className="font-medium text-slate-800">
-              {trip.createdBy?.name}
-            </p>
-            <p className="text-sm text-slate-500">
-              {trip.createdBy?.email}
-            </p>
-          </div>
-
-          {/* ACTIONS */}
-          <div className="bg-white rounded-2xl shadow p-4 space-y-3">
-
-            {isCreator && (
-              <>
+            {!closed && (
+              <div className="mt-6">
                 <button
                   onClick={() =>
-                    navigate(`/edit-trip/${trip._id}`)
+                    navigate("/create-trip", {
+                      state: {
+                        destination: trip.destination,
+                        image: trip.image || "",
+                        location: trip.location,
+                        startDate: trip.startDate,
+                        endDate: trip.endDate,
+                        budget: trip.budget,
+                        maxPeople: trip.maxPeople,
+                        description: trip.description,
+                        travelType: trip.travelType || "",
+                      },
+                    })
                   }
-                  className="w-full bg-yellow-500 text-white py-2 rounded-lg font-semibold"
+                  className="btn w-full"
                 >
-                  ✏️ Edit Trip
+                  <FiPlus />
+                  Create similar trip
                 </button>
+              </div>
+            )}
 
+            {trip.location?.lat != null && trip.location?.lng != null && (
+              <section className="card p-5 sm:p-6">
+                <h2 className="mb-4 text-lg font-bold text-ink">Location</h2>
+                <MapBoxView lat={trip.location.lat} lng={trip.location.lng} />
+              </section>
+            )}
+          </section>
+
+          <aside className="space-y-5 lg:sticky lg:top-24 lg:h-fit">
+            <section className="card p-5">
+              <p className="text-xs font-bold tracking-wider text-muted">HOSTED BY</p>
+              <div className="mt-3 flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-blue-50 font-bold text-primary">
+                  {trip.createdBy?.avatar ? (
+                    <img src={trip.createdBy.avatar} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    trip.createdBy?.name?.[0]
+                  )}
+                </div>
+                <div>
+                  <p className="font-bold text-ink">{trip.createdBy?.name}</p>
+                  <p className="text-sm text-muted">Trip host</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="card space-y-3 p-5">
+              {isHost ? (
+                <>
+                  <button onClick={() => navigate(`/edit-trip/${trip._id}`)} className="btn w-full">
+                    <FiEdit3 />
+                    Edit trip
+                  </button>
+                  <button
+                    onClick={remove}
+                    disabled={deleting}
+                    className="w-full rounded-xl bg-red-50 px-4 py-2.5 font-semibold text-error hover:bg-red-100 disabled:opacity-60"
+                  >
+                    <FiTrash2 className="mr-2 inline" />
+                    {deleting ? "Deleting..." : "Delete trip"}
+                  </button>
+                </>
+              ) : !isJoined && !requested ? (
+                <button onClick={join} disabled={joining || closed} className="btn w-full">
+                  {joining ? "Sending request..." : closed ? "Trip is closed" : "Request to join"}
+                </button>
+              ) : requested ? (
+                <div className="rounded-xl bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-700">Request sent</div>
+              ) : null}
+
+              {(isHost || isJoined) && (
                 <button
-                  onClick={handleDeleteTrip}
-                  disabled={deleting}
-                  className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
+                  onClick={() => navigate(`/chat/${trip._id}`)}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal px-4 py-2.5 font-semibold text-white hover:bg-teal/90"
                 >
-                  {deleting ? "Deleting..." : "🗑️ Delete Trip"}
+                  <FiMessageCircle />
+                  Open chat
                 </button>
-              </>
-            )}
+              )}
+            </section>
 
-            {isParticipant && (
-              <button
-                onClick={() =>
-                  navigate(`/chat/${trip._id}`)
-                }
-                className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold"
-              >
-                Open Chat 💬
-              </button>
+            {isHost && (
+              <section className="card p-5">
+                <h2 className="mb-4 font-bold text-ink">Join requests</h2>
+                <JoinRequests trip={trip} refreshTrip={fetchTrip} />
+              </section>
             )}
-
-            {!isParticipant && !isRequested && (
-              <button
-                onClick={handleJoinTrip}
-                disabled={joining || spotsLeft === 0 || isClosed}
-                className="w-full bg-pink-600 text-white py-2 rounded-lg font-semibold disabled:opacity-60"
-              >
-                {joining ? "Sending..." : "Join Trip"}
-              </button>
-            )}
-
-            {isRequested && (
-              <button
-                disabled
-                className="w-full bg-slate-200 py-2 rounded-lg text-slate-600 font-semibold"
-              >
-                Request Sent
-              </button>
-            )}
-          </div>
-
-          {/* JOIN REQUESTS */}
-          {isCreator && (
-            <div className="bg-white rounded-2xl shadow p-4">
-              <h3 className="font-semibold mb-3">
-                Join Requests
-              </h3>
-              <JoinRequests
-                trip={trip}
-                refreshTrip={fetchTrip}
-              />
-            </div>
-          )}
+          </aside>
         </div>
       </div>
+    </main>
+  );
+}
+
+function Detail({ icon, label, value }) {
+  return (
+    <div className="rounded-xl bg-slate-50 p-3">
+      <span className="flex items-center gap-2 text-sm text-muted">
+        {icon}
+        {label}
+      </span>
+      <span className="mt-1 block text-sm font-bold text-ink">{value}</span>
     </div>
   );
-};
-
-export default TripDetails;
+}

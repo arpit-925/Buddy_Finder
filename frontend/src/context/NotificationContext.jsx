@@ -10,13 +10,12 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNotification = (data) => {
-      console.log("🔔 Notification received:", data); // DEBUG
-      setNotifications((prev) => [
-        { ...data, read: false, id: Date.now() },
-        ...prev,
-      ]);
-    };
+const handleNotification = (data) => {
+  setNotifications((prev) => [
+    { ...data, read: false, id: Date.now() },
+    ...prev,
+  ]);
+};
 
     socket.on("notification", handleNotification);
 

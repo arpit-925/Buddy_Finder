@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 let typingTimeout;
 
 const Chat = () => {
-  const { tripId } = useParams();
+  const { id } = useParams();
   const { user } = useContext(AuthContext);
   const { socket } = useSocket();
 
@@ -30,7 +30,7 @@ const Chat = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await api.get(`/messages/${tripId}`);
+        const res = await api.get(`/messages/${id}`);
         setMessages(res.data);
       } catch {
         toast.error("Failed to load chat");
@@ -39,26 +39,26 @@ const Chat = () => {
       }
     };
     fetchMessages();
-  }, [tripId]);
+  }, [id]);
 
   /* Fetch host */
   useEffect(() => {
     const fetchHost = async () => {
       try {
-        const res = await api.get(`/trips/${tripId}`);
+        const res = await api.get(`/trips/${id}`);
         setHostId(res.data.createdBy?._id);
       } catch {
         console.error("Failed to fetch host");
       }
     };
     fetchHost();
-  }, [tripId]);
+  }, [id]);
 
   /* Socket setup */
   useEffect(() => {
     if (!socket) return;
 
-    socket.emit("joinRoom", { tripId });
+    socket.emit("joinRoom", { id });
 
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
@@ -81,7 +81,7 @@ const Chat = () => {
       socket.off("userTyping");
       socket.off("userStopTyping");
     };
-  }, [socket, tripId, user._id]);
+  }, [socket, id, user._id]);
 
   /* Send message */
   const sendMessage = async () => {
@@ -89,13 +89,13 @@ const Chat = () => {
 
     try {
       const res = await api.post("/messages/send", {
-        tripId,
+        id,
         message: text,
       });
 
       socket.emit("sendMessage", res.data);
       setText("");
-      socket.emit("stopTyping", { tripId });
+      socket.emit("stopTyping", { id });
     } catch {
       toast.error("Message failed");
     }
@@ -106,11 +106,11 @@ const Chat = () => {
     setText(e.target.value);
     if (!socket) return;
 
-    socket.emit("typing", { tripId });
+    socket.emit("typing", { id });
 
     if (typingTimeout) clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
-      socket.emit("stopTyping", { tripId });
+      socket.emit("stopTyping", { id });
     }, 1000);
   };
 

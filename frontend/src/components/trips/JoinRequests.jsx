@@ -16,7 +16,9 @@ const JoinRequests = ({ trip, refreshTrip }) => {
     }
   };
 
-  if (trip.joinRequests.length === 0) {
+  const requests = trip.joinRequests || [];
+
+  if (requests.length === 0) {
     return (
       <p className="text-sm text-gray-500">
         No pending requests
@@ -26,33 +28,36 @@ const JoinRequests = ({ trip, refreshTrip }) => {
 
   return (
     <div className="space-y-3">
-      {trip.joinRequests.map((user) => (
+      {requests.map((user) => {
+        const id = user?._id ?? user;
+        return (
         <div
-          key={user._id}
+          key={id}
           className="flex justify-between items-center border p-2 rounded"
         >
           <div>
-            <p className="font-medium">{user.name}</p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="font-medium">{user?.name || "Traveler"}</p>
+            <p className="text-xs text-gray-500">{user?.email || ""}</p>
           </div>
 
           <div className="flex gap-2">
             <button
-              onClick={() => handleAction(user._id, "accept")}
+              onClick={() => handleAction(id, "accept")}
               className="bg-green-500 text-white px-3 py-1 rounded text-sm"
             >
               Accept
             </button>
 
             <button
-              onClick={() => handleAction(user._id, "reject")}
+              onClick={() => handleAction(id, "reject")}
               className="bg-red-500 text-white px-3 py-1 rounded text-sm"
             >
               Reject
             </button>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

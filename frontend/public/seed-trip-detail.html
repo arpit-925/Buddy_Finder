@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <script>
+      const auth = {
+        token: "fake-token-for-render-test",
+        user: {
+          _id: "seeduser123",
+          name: "Seed User",
+          email: "seed@example.com",
+          preferences: { budget: 50000, travelType: "Mountain" },
+        },
+      };
+      localStorage.setItem("auth", JSON.stringify(auth));
+      window.location.replace("/trip/6a25a62712a8b7c0a2ab8e4d");
+    </script>
+  </body>
+</html>

@@ -45,7 +45,7 @@ export const suggestedPlaces = [
     season: ["winter"],
     type: "city",
     budgetRange: "low",
-    image: "https://images.unsplash.com/photo-1605197161470-5f2a1f1a1f4e?auto=format&fit=crop&w=800"
+    image: "https://images.unsplash.com/photo-1596178060671-7a80dc8059ea?auto=format&fit=crop&w=800"
   },
   { name: "Pune", lat: 18.5204, lng: 73.8567, season: ["monsoon","winter"], type: "city", budgetRange: "low", image: "https://images.unsplash.com/photo-1596541223130-5d31a73fb6c6?auto=format&fit=crop&w=800" },
 

@@ -24,7 +24,7 @@ import EditProfile from "./pages/EditProfile";
 import VerifyEmailNotice from "./pages/Auth/VerifyEmailNotice";
 
 // ================= LAYOUTS & GUARDS =================
-import ProtectedRoute from "./components/common/ProtectedRoute";
+import ProtectedRoute from "./utils/ProtectedRoute";
 import ProtectedLayout from "./layouts/ProtectedLayout";
 import MainLayout from "./layouts/MainLayout";
 
@@ -73,7 +73,7 @@ function App() {
               <Route path="/create-trip" element={<CreateTrip />} />
               <Route path="/trip/:id" element={<TripDetails />} />
               <Route path="/edit-trip/:id" element={<EditTrip />} />
-              <Route path="/chat/:tripId" element={<Chat />} />
+              <Route path="/chat/:id" element={<Chat />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/edit-profile" element={<EditProfile />} />
             </Route>

@@ -9,10 +9,6 @@ const About = () => {
         <h1 className="text-4xl md:text-5xl font-bold leading-tight">
           Find the right travel buddy.
         </h1>
-        <p className="mt-6 text-lg text-slate-600 max-w-2xl mx-auto">
-          Buddy Finder helps travelers connect, plan trips together,
-          and explore destinations with people who share the same vibe.
-        </p>
       </section>
 
       {/* WHY SECTION */}
@@ -120,10 +116,6 @@ const About = () => {
             <img src="https://randomuser.me/api/portraits/men/45.jpg" className="w-12 h-12 rounded-full" />
             <img src="https://randomuser.me/api/portraits/women/56.jpg" className="w-12 h-12 rounded-full" />
           </div>
-
-          <p className="mt-6 text-slate-300 max-w-2xl mx-auto">
-            Real people. Real trips. Real connections.
-          </p>
         </div>
       </section>
 
